@@ -1,18 +1,4 @@
-"""
-Entity class module.
 
-All objects within the game that require hitpoints, movement, and interactions
-should inherit entity.
-
-Good examples:
-    Player - requires health, movement, environment interaction
-    Enemies - same as Player
-    Bubble - Bounces around the screen checking interactions,
-            and is popped (hence the need for hitpoints)
-
-Objects that inherit entity should override entity methods and call super()
-at the end of each overridden method.
-"""
 import typing_extensions
 import pygame
 from pygame import Vector2
