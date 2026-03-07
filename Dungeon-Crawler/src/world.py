@@ -13,9 +13,8 @@ Manages all items in the game world (rooms, entities, items, etc.)
 Ideally I believe there should only be one world at a time, managing levels, a single player, etc.
 (makes sense, let me know)
 """
-import typing_extensions
 import pygame
-from pygame import locals
+# from pygame import locals
 
 from entity import Entity
 

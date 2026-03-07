@@ -13,11 +13,11 @@ Good examples:
 Objects that inherit entity should override entity methods and call super()
 at the end of each overridden method.
 """
-import typing_extensions
-import pygame
+# import typing_extensions
+# import pygame
 from pygame import Vector2
 import pygame.mixer as mixer
-from pygame import locals
+# from pygame import locals
 
 
 class Entity:
