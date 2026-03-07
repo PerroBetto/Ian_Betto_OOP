@@ -60,7 +60,7 @@ class Game:
 
         _running = false.
         """
-        self._resolution : tuple[int, int] = tuple[int, int]()
+        self._resolution : tuple[int, int] = (0, 0)
         if resolution is None:
             self._resolution = (1280, 720)
         else:
