@@ -32,7 +32,7 @@ class Dungeon:
         self.rng = random.Random(seed)  # Independent RNG
         self.generate()
 
-    def generate(self):
+    def generate(self):  # Call this function to generate dungeon
         self._generate_layout()
         self._assign_room_types()
 

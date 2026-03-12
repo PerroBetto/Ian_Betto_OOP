@@ -14,6 +14,7 @@ As per the tutorial online, a game loop should look like this:
 We handle events first, then run the next game loop (next frame)
 and then render the game to the screen last.
 """
+import random
 import sys
 from typing_extensions import Self
 
@@ -22,7 +23,7 @@ import pygame.mixer_music as music
 from pygame import locals
 
 from world import World
-
+from structures_orig import Dungeon
 
 class Game:
     """singleton obj"""
@@ -94,6 +95,9 @@ class Game:
         self._running = True
         self._world: World = World()
         self._curr_music: str = str()
+        self.Dungeon: Dungeon = Dungeon(seed=random.randint(0, 1000000))
+        self.Dungeon.generate()
+
 
     # --- event handler ---
 
