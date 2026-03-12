@@ -42,6 +42,7 @@ class World:
         """fixme"""
         for entity in self._entities:
             self._sounds.append(entity.curr_sound)
+            
 
     @property
     def music(self) -> str:

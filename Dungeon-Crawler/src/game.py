@@ -92,6 +92,8 @@ class Game:
         self._screen: pygame.Surface = pygame.display.set_mode(
             self._resolution, pygame.HWSURFACE)
         pygame.mixer.init()
+        pygame.mixer.set_num_channels(16)
+        
         self._running = True
         self._world: World = World()
         self._curr_music: str = str()
@@ -261,6 +263,7 @@ class Game:
         """
         game: Game = Game()
         game.run_game()
+        Dungeon
 
 
 if __name__ == "__main__":
