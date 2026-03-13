@@ -19,7 +19,7 @@ import pygame
 # from pygame import locals
 
 from entity import Entity
-from structures_orig import Dungeon
+from structures import Dungeon
 
 
 class World:

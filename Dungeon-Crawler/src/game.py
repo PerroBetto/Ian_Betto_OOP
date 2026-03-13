@@ -23,7 +23,7 @@ import pygame.mixer_music as music
 from pygame import locals
 
 from world import World
-from structures_orig import Dungeon
+from structures import Dungeon
 
 class Game:
     """singleton obj"""
