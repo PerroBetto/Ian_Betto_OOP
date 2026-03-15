@@ -50,11 +50,16 @@ class World:
 
 # --- initializers ---
 
-    def __init__(self, seed : Any) -> None:
-        """Init World"""
+    def __init__(self, seed: Any) -> None:
+        """
+        World Object.
+
+        Args:
+            seed (Any): Dungeon seed.
+        """
         # initialize sounds
         # self._sound_manager : SoundManager = SoundManager()
-        self._sounds : list[int] = list[int]()
+        self._sounds: list[int] = list[int]()
 
         # initialize entities
         self._entity_init()
@@ -69,26 +74,57 @@ class World:
         # initialize dungeon
         self._dungeon_init(seed)
 
-    def _dungeon_init(self, seed : Any) -> None:
-        """FIXME"""
-        self._dungeon_seed : Any = seed
+    def _dungeon_init(self, seed: Any) -> None:
+        """
+        Dungeon structure initializer.
+        > Initialize dungeon and hold it in memory.
+
+        Args:
+            seed (Any): Dungeon seed
+        """
+        self._dungeon_seed: Any = seed
         # self._dungeon: Dungeon = Dungeon(self._dungeon_seed)
         # self._curr_room: Room = Room(0, 0)
 
     def _entity_init(self) -> None:
-        """FIXME"""
-        self._entities : list[Entity] = list[Entity]()
+        """
+        Entity initializer.
+        > The entity list is initialized here, along with the player.
+
+        > The player when initialized should be placed appropriately according to
+
+        > the starting room. All regular values should be set.
+        """
+        self._entities: list[Entity] = list[Entity]()
         # self._player : Player = Player()
 
-    def _ui_init(self) -> None:
-        """FIXME"""
+    def _ui_init(self) -> None:  # FIXME
+        """
+        UI initializer.
+        > World UI should be initialized here.
+
+        > All of the UI should be updated, set, and rendered according to the game
+
+        > display.
+        """
         # self._ui : UI = UI()
+        pass
 
 # --- loop method ---
 
     def loop(self) -> None:
-        """FIXME"""
-        # self._player.loop()
+        """
+        World Loop method.
+        > Once per frame, loop() should be called. In a game loop, all logic is processed.
+
+        Processed logic:
+        - Room changes / updates
+        - player loop
+        - entity loop
+        - UI changes / updates
+        - etc
+        """
+        # self._player.loop()  # FIXME
 
         for indx, entity in enumerate(self._entities):
             self._entities[indx].loop()
@@ -99,8 +135,23 @@ class World:
 
 # --- render method ---
 
-    def render(self) -> None:
-        """FIXME"""
+    def render(self) -> None:  # FIXME
+        """
+        World Render method.
+        > Called once at the end of each frame by game, **AFTER** loop.
+
+        > When called, all render functions of every object should be called.
+
+        > Sounds should be played and music should be updated.
+
+        To render:
+        - sounds
+        - Room
+        - entities
+        - items
+        - UI
+        - etc.
+        """
         # self._player.render()
         # for indx, entity in enumerate(self._entities):
         #     self._entities[indx].render()
@@ -115,38 +166,89 @@ class World:
 
 # --- sound methods ---
 
-    def set_world_music(self) -> None:
-        """FIXME"""
+    def set_world_music(self) -> None:  # FIXME
+        """
+        Sets the world music according to the room type.
+        > This method should change the music once the room type changes
+
+        > Example: Enemy -> Puzzle
+        """
         pass
 
     def queue_sound(self, sound: int) -> None:
-        """FIXME"""
+        """
+        Add a sound to the queue.
+        > Should be called by objects when they play a sound.
+        > Rather than storing sound objects, sound ID's are to be passed.
+
+        Args:
+            sound (int): Sound ID to append
+        """
         self._sounds.append(sound)
 
 # --- dungeon methods ---
 
-    def update_room(self) -> None:
-        """FIXME"""
+    def update_room(self) -> None:  # FIXME
+        """
+        Updates the room according to changes.
+
+        > Called each frame, updates the room according to puzzle completion,
+
+        > door unlocks, etc.
+        """
         pass
 
 # --- UI methods ---
 
-    def update_ui(self) -> None:
-        """FIXME"""
+    def update_ui(self) -> None:  # FIXME
+        """
+        Updates the UI according to changes.
+
+        > Called each frame, updates the UI according to item selections, player HP,
+
+        > key and bomb count, etc.
+        """
         pass
 
 # --- entity methods ---
 
-    # def get_collide(self, entity: Entity) -> bool:
-    #     """FIXME"""
+    # def get_collide(self, entity: Entity) -> bool:  # FIXME
+    #     """
+    #     Detects the collision of the passed entity in relation to all collidables.
+    #     > Collidables include walls, doors, pits, and other entities.
+
+    #     Args:
+    #         entity (Entity): Entity passing itself to check their own collision
+
+    #     Returns:
+    #         bool: True if collided, False if not
+    #     """
     #     return bool()
 
-    def player_action(self, action: str) -> None:
-        """FIXME"""
+    def player_action(self, action: str) -> None:  # FIXME
+        """
+        Get player actions and change the world accordingly.
+        > When the player makes an action (such as swinging a sword or using an item),
+
+        > this function is called by the player.
+
+        Args:
+            action (str): Action ID passed by player.
+        """
         pass
 
-    def entity_action(self, action: str) -> None:
-        """FIXME"""
+    def entity_action(self, entity: Entity, action: str) -> None:  # FIXME
+        """
+        Get entity actons and change the world accordingly.
+        > Whenever an entity makes an action (such as attacking)
+
+        > this function is to be called by that entity.
+
+        Args:
+            entity (Entity): Entity calling the function.
+
+            action (str): Action ID passed by the entity.
+        """
         pass
 
 # --- properties ---

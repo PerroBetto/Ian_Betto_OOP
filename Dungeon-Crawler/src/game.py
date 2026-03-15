@@ -247,8 +247,8 @@ class Game:
         """
         Build the game here!
         """
-        seed : Any = 2983
-        game: Game = Game(seed=seed)  # type: ignore
+        seed: Any = 2983
+        game: Game = Game(seed=seed)
         game.run_game()
 
 
