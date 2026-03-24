@@ -16,7 +16,7 @@ and then render the game to the screen last.
 """
 import random
 import sys
-from typing_extensions import Self
+from typing import Self, Any
 
 import pygame
 import pygame.mixer_music as music
@@ -38,9 +38,10 @@ class Game:
                  , "_framerate"  # Clock: Manage framerate
                  , "_running"  # boolean: game status
                  , "_curr_music"  # str: playing currently
-                 , "_world"]  # World: Object
+                 , "_world"  # World: Object
+                 , "_seed"]  # seed: any
 
-    def __new__(cls, *args: tuple[int, int]) -> Self:
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         """Simple singleton implementation"""
         if not cls._instance:
             cls._instance = super().__new__(cls)  # *args assumed added.
@@ -48,7 +49,7 @@ class Game:
             raise Exception("Cannot instantiate new singleton.")
         return cls._instance
 
-    def __init__(self, resolution: tuple[int, int] | None = None) -> None:
+    def __init__(self, seed: Any, resolution: tuple[int, int] | None = None) -> None:
         """
         Class Game Initializer.
         > Initializes variables belonging to Game.
@@ -61,6 +62,7 @@ class Game:
 
         _running = false.
         """
+        self._seed: Any = seed
         self._resolution: tuple[int, int] = (0, 0)
         if resolution is None:
             self._resolution = (1280, 720)
@@ -73,7 +75,7 @@ class Game:
 
     # --- game initialization ---
 
-    def game_init(self) -> None:
+    def _game_init(self) -> None:
         """
         Game initializer
         > Initializes the game objects when they are wanted.
@@ -95,7 +97,7 @@ class Game:
         pygame.mixer.set_num_channels(16)
         
         self._running = True
-        self._world: World = World()
+        self._world: World = World(self._seed)
         self._curr_music: str = str()
 
 
@@ -137,6 +139,7 @@ class Game:
 
         Also calls sound handler.
         """
+        self._world.render()
         pygame.display.flip()
 
         self.sound_handler()
@@ -159,8 +162,6 @@ class Game:
                 * includes both sounds and music
             2. Play music.
                 * If the music changed from the last, fade them.
-            3. Play sounds.
-                1. In a for loop, play all sounds that have been returned.
 
         All of the above should be done at the _VOLUME constant.
         """
@@ -173,15 +174,6 @@ class Game:
             music.queue(world_music, loops=1)
             if pygame.mixer.music.get_busy():
                 music.fadeout(100)
-
-        # NOTE: I dont know if the above code works, I have no music to actually test
-
-        # Get sounds
-        world_sounds: list[pygame.mixer.Sound] = self._world.sounds
-
-        for sound in world_sounds:
-            sound.set_volume(self._VOLUME)
-            sound.play()
 
     # --- cleanup module ---
 
@@ -245,7 +237,7 @@ class Game:
             * etc.
             * also handles sounds!
         """
-        self.game_init()
+        self._game_init()
         while self._running:
             self.event_handler()
             self.on_loop()
@@ -260,7 +252,8 @@ class Game:
         """
         Build the game here!
         """
-        game: Game = Game()
+        seed: Any = 2983
+        game: Game = Game(seed=seed)
         game.run_game()
         Dungeon
 
