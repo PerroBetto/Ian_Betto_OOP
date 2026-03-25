@@ -134,7 +134,7 @@ class World:
 
         for indx, _entity in enumerate(self._entities):
             self._entities[indx].loop(delta)
-            print(f"{_entity}: {_entity.move_speed}")
+            # print(f"{_entity}: {_entity.move_speed}")
 
         self.update_room
         self.update_ui

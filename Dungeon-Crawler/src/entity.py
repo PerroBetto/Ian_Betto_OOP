@@ -13,7 +13,7 @@ Good examples:
 Objects that inherit entity should override entity methods and call super()
 at the end of each overridden method.
 """
-from typing import Any
+from typing import Any, Callable
 from pathlib import Path
 
 import pygame
@@ -26,6 +26,9 @@ class Entity(sprite.Sprite):
     """
     Base class for all entity types.
     """
+
+    _SCALE: int = 4
+
     __slots__: list[str] = ["_world"  # Any (World this entity belongs to)
                             "_sheet",  # Surface
                             "_assets",  # dict[Surface]
@@ -73,30 +76,50 @@ class Entity(sprite.Sprite):
         self._friction: float = friction
         self._sounds: list[int] = list[int]()
 
-        sheet_path = Path(__file__).parent / "../assets/visual/sprites/test.png"
+        self._assets: dict[str, Surface] = dict[str, Surface]()
+        sheet_path = Path(__file__).parent / "../assets/visual/sprites/player/Fish-Sheet.png"
         self._sheet: Surface = pygame.image.load(sheet_path)
-        self.assets_init(1, 1)
+        self.assets_init(16, 16, 3, "ESN", "move", self._sheet)
 
-    def assets_init(self, width: int, height: int, sheet: Surface | None = None) -> None:
+    def assets_init(self, width: int,
+                    height: int,
+                    group_size: int,
+                    pattern: str,
+                    name: str,
+                    sheet: Surface,
+                    func: Callable[..., Any] | None = None,
+                    *args) -> None:
         """
         Create assets from a sprite sheet.
 
         Each individual sprite is as wide as width, and as long as height.
-
-        Args:
-            width (int): sprite width
-            height (int): sprite length
-            sheet (Surface | None, optional): Sprite sheet. Defaults to None.
         """
-        self._assets: dict[str, Surface] = dict[str, Surface]()
+        def get_img(sheet_pos: list[int]) -> Surface:
+            new_img: Surface = Surface((width, height)).convert_alpha()
+            new_img.blit(sheet, (0, 0), (sheet_pos[0], sheet_pos[1], width, height))
+            new_img = pygame.transform.scale(new_img,
+                                             (width * self._SCALE, height * self._SCALE))
+            return new_img
 
-        self.image = Surface([0, 0])
-        img = self._sheet.convert_alpha()
-        img = pygame.transform.scale(img, [img.get_width() * 4, img.get_height() * 4])  # scale up
-        self.image = img
+        def regular() -> None:
+            """regular function for creating scripts"""
+            sheet_pos: list[int] = [0, 0]
+            for p_i in range(len(pattern)):
+                for i in range(group_size):
+                    img_name: str = f"{pattern[p_i]}{name}{i}"
+                    self._assets[img_name] = get_img(sheet_pos)
 
-        self._rect: Rect = self.image.get_rect()
-        self.set_rect()
+                    sheet_pos[0] += width
+                    if sheet_pos[0] >= sheet.get_width():
+                        sheet_pos[0] = 0
+                        sheet_pos[1] += height
+
+        if not func:
+            regular()
+        else:
+            func(*args)
+
+        self._rect: Rect = Rect(0, 0, width * self._SCALE, height * self._SCALE)
 
 # ----- properties -----
 
@@ -152,16 +175,22 @@ class Entity(sprite.Sprite):
         direction: Vector2 = Vector2()
 
         key: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
-
+        value = "Emove0"
         if key[pygame.K_a]:
             direction.x += -1
+            value = "Emove2"
         if key[pygame.K_d]:
             direction.x += 1
+            value = "Smove0"
 
         if key[pygame.K_w]:
             direction.y += -1
+            value = "Smove1"
         if key[pygame.K_s]:
             direction.y += 1
+            value = "Nmove0"
+        
+        self.image = self._assets.get(value)
 
         self.move(delta, direction)
         self.collide()
