@@ -32,6 +32,7 @@ class Entity(sprite.Sprite):
     __slots__: list[str] = ["_world"  # Any (World this entity belongs to)
                             "_assets",  # dict[str, int]
                             "_position",  # Vector2
+                            "_prev_position",  # Vector2
                             "_velocity",  # Vector2
                             "_speed",  # float
                             "_clamp_speed",  # float
@@ -66,6 +67,7 @@ class Entity(sprite.Sprite):
         self._world: World = world
 
         self._position: Vector2 = position
+        self._prev_position: Vector2 = Vector2(position.x, position.y)
 
         self.speed = speed
         self._clamp_speed: float = clamp_speed
@@ -147,13 +149,17 @@ class Entity(sprite.Sprite):
 # ----- base methods -----
 
     def loop(self, delta: float,
-             **kwargs: dict[str, Any]) -> None:
+             move: Vector2 | None = None) -> None:
         """
         Entity loop. Run once every frame per entity.
 
         The base method will call move() and collide() for updating position.
         """
-        self.move(delta)
+        self._prev_position = Vector2(self._position.x, self._position.y)
+        if move:
+            self.move(delta, move)
+        else:
+            self.move(delta)
         self.collide()
 
     def render(self) -> tuple[Surface, Rect]:
@@ -208,9 +214,45 @@ class Entity(sprite.Sprite):
         # print(self._position)
         self.set_rect()
 
+    def move_to(self, new_pos: Vector2) -> None:
+        """FIXME"""
+        self._position = new_pos
+        self.set_rect()
+
     def collide(self) -> None:
         """FIXME"""
-        self._world.entity_action(self, "collision")
+        data: list[Rect] = self._world.entity_action(self, "collision")
+
+        if len(data) > 0:
+            # check every rect
+            for rect in data:
+                # above rect
+                self.rect_collide(rect)
+
+    def rect_collide(self, rect: Rect) -> None:
+        """FIXME"""
+        # above rect
+        relative_x: int = 0
+        relative_y: int = 0
+
+        diff_x: float = self._prev_position.x//1 - (rect.left + (0.5 * rect.width))
+        if diff_x >= rect.width:
+            relative_x = 1
+        elif diff_x <= -rect.width:
+            relative_x = -1
+
+        diff_y: float = self._prev_position.y//1 - (rect.top + (0.5 * rect.height))
+        if diff_y >= rect.height:
+            relative_y = 1
+        elif diff_y <= -rect.height:
+            relative_y = -1
+
+        if abs(relative_x) == 1:
+            self._velocity.x = 0
+            self._position.x = self._prev_position.x
+        if abs(relative_y) == 1:
+            self._velocity.y = 0
+            self._position.y = self._prev_position.y
 
     def play_sound(self, sound_key: str) -> None:
         """FIXME"""
@@ -271,6 +313,11 @@ class Entity(sprite.Sprite):
         single = pygame.transform.scale(single, dimension * Entity._SCALE)
         return single
 
+# ---- overloads ----
+
+    def __str__(self) -> str:
+        return "Entity"
+
 
 class Bubble(Entity):
     """test class"""
@@ -279,8 +326,15 @@ class Bubble(Entity):
                  position: Vector2 = Vector2(0, 0)) -> None:
 
         bubble = Path(__file__).parent / "../assets/visual/sprites/test.png"
-        super().__init__(world, position=position, friction=1, HP=1, image_path=bubble)
+        super().__init__(world, position=position, speed=200, clamp_speed=200, friction=0, HP=1)
         self._sound_init()
+        self.move(0, Vector2(1, 1))
+
+    def loop(self, delta: float, move: Vector2 | None = None) -> None:
+        return super().loop(delta, Vector2(-1, -1))
 
     def _sound_init(self) -> None:
         self._sounds["dog"] = 1
+
+    def __str__(self) -> str:
+        return "Bubble"

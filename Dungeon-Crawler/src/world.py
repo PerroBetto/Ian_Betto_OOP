@@ -100,8 +100,8 @@ class World:
         > the starting room. All regular values should be set.
         """
         self._entities: list[Entity] = list[Entity]()
-        self._entities.append(Bubble(self))
-        self._entities.append(Entity(self))
+        self._entities.append(Bubble(self, position=pygame.Vector2(400, 270)))
+        self._entities.append(Entity(self, position=pygame.Vector2(241, 100)))
         # self._player : Player = Player()
 
     def _ui_init(self) -> None:  # FIXME
@@ -254,7 +254,7 @@ class World:
         """
         print(action)
 
-    def entity_action(self, entity: Entity, action: str) -> None:  # FIXME
+    def entity_action(self, entity: Entity, action: str) -> Any:  # FIXME
         """
         Get entity actons and change the world accordingly.
         > Whenever an entity makes an action (such as attacking)
@@ -270,8 +270,16 @@ class World:
 
             action (str): Action ID passed by the entity.
         """
-        # print(action)
-        # entity.move(pygame.Vector2(1, 1))
+        if action == "collision":
+            collides: list[pygame.Rect] = list[pygame.Rect]()
+            # Check collisions with every rect (including entities)
+            for e in self._entities:
+                if e is entity:
+                    continue
+                if pygame.sprite.collide_rect(entity, e):  # type: ignore
+                    collides.append(e.rect)
+            return collides
+        return 0
 
 # --- properties ---
 
