@@ -1,6 +1,10 @@
 import random
 from collections import deque
 import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1] / "Dungeon-Crawler" / "src"))
+from generation import Generation # type: ignore
 
 class Room:
     def __init__(self, x, y, room_type="empty"):
@@ -100,15 +104,73 @@ class Dungeon:
                 room.room_type = "enemy"
 
 def main():
-    """
-    Main function to run the game.
-    > Initializes the game and starts the main game loop.
-    """
-    dungeon: Dungeon = Dungeon(seed=random.randint(0, 1000000))
-    print("Generated Dungeon:")
-    for room in dungeon.rooms.values():
-        print(room)
-    print("Length: " , len(dungeon.rooms.values()))
+    seed = int(sys.argv[1]) if len(sys.argv) > 1 else random.randint(0, 1000000)
+    dungeon: Dungeon = Dungeon(seed=seed)
+    generation = Generation(dungeon)
+    generation.Apply_textures()
+
+    print(f"Seed: {seed}")
+    print(f"Rooms generated: {len(dungeon.rooms)}")
+    print(f"Wall records generated: {len(generation.room_walls)}")
+
+    for (x, y), room in sorted(dungeon.rooms.items()):
+        print(f"Room ({x}, {y}): type={room.room_type}, connections={[f'({r.x}, {r.y})' for r in room.connections]}")
+    directions = {
+        "W": (-1, 0),
+        "N": (0, 1),
+        "E": (1, 0),
+        "S": (0, -1),
+    }
+
+    errors = []
+
+    for (x, y), room in sorted(dungeon.rooms.items()):
+        print(f"\nRoom ({x}, {y}) type={room.room_type}")
+        for orientation in ["W", "N", "E", "S"]:
+            key = (x, y, orientation)
+            wall_data = generation.room_walls.get(key)
+            if wall_data is None:
+                errors.append(f"Missing wall data for {key}")
+                continue
+
+            dx, dy = directions[orientation]
+            neighbor_exists = (x + dx, y + dy) in dungeon.rooms
+
+            # Match generation.py behavior exactly:
+            # boss south side is always forced to closed boss door texture.
+            expected_hasdoor = neighbor_exists
+            if room.room_type == "boss" and orientation == "S":
+                expected_hasdoor = True
+
+            if wall_data["hasdoor"] != expected_hasdoor:
+                errors.append(
+                    f"{key}: hasdoor={wall_data['hasdoor']} expected={expected_hasdoor}"
+                )
+
+            expected_open = expected_hasdoor and orientation == "S" and room.room_type != "boss"
+            if wall_data["isopen"] != expected_open:
+                errors.append(
+                    f"{key}: isopen={wall_data['isopen']} expected={expected_open}"
+                )
+
+            wall_path = wall_data["sel_img"]
+            if not isinstance(wall_path, Path):
+                errors.append(f"{key}: sel_img is not a pathlib.Path ({type(wall_path)})")
+
+            print(
+                f"  {orientation}: hasdoor={wall_data['hasdoor']}, "
+                f"isopen={wall_data['isopen']}, path={wall_path}"
+            )
+
+    print("\nVerification Summary")
+    if errors:
+        print(f"FAIL ({len(errors)} issues)")
+        for error in errors:
+            print(f" - {error}")
+        raise SystemExit(1)
+
+    print("PASS (all wall records match expected room-surroundings logic)")
+
 
 if __name__ == "__main__":
     main()
