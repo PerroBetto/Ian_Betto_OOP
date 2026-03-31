@@ -32,18 +32,22 @@ class Dungeon:
         self.rng = random.Random(seed)  # Independent RNG
         self.generate()
 
-    def Getseed(self):
+    @property
+    def seed(self):
         return self.seed
     
-    def Getroomdata(self, x, y):
+    @seed.setter
+    def seed(self, new_seed):
+        self.seed = new_seed
+
+    @property
+    def roomdata(self, x, y):
         return self.rooms.get((x, y), None)
     
-    def Getroomtype(self, x, y):
+    @property
+    def roomtype(self, x, y):
         room = self.Getroomdata(x, y)
         return room.room_type if room else None
-
-    def Setseed(self, new_seed):
-        self.seed = new_seed
 
     def generate(self):  # Call this function to generate dungeon
         self._generate_layout()

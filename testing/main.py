@@ -1,5 +1,6 @@
 import random
 from collections import deque
+import sys
 
 class Room:
     def __init__(self, x, y, room_type="empty"):
@@ -107,6 +108,7 @@ def main():
     print("Generated Dungeon:")
     for room in dungeon.rooms.values():
         print(room)
+    print("Length: " , len(dungeon.rooms.values()))
 
 if __name__ == "__main__":
     main()
