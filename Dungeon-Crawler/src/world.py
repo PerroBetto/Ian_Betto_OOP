@@ -101,7 +101,7 @@ class World:
         self._entities: list[Entity] = list[Entity]()
         img = pygame.image.load("../assets/visual/sprites/test.png").convert_alpha()
         img = pygame.transform.scale(img, [img.get_width() * 4, img.get_height() * 4])  # scale up
-        self._entities.append(Entity(self, img=img, speed=10, max_speed=10, friction=.05))
+        self._entities.append(Entity(self, img=img, speed=20, max_speed=20, friction=.5))
         self._entities[0].move(pygame.Vector2(1, 1))
         # self._player : Player = Player()
 
@@ -267,7 +267,7 @@ class World:
             action (str): Action ID passed by the entity.
         """
         print(action)
-        entity.move(pygame.Vector2(1, 1))
+        # entity.move(pygame.Vector2(1, 1))
 
 # --- properties ---
 
