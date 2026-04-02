@@ -35,7 +35,7 @@ class Generation:
                             continue
                         self.sel_img += "o_"
                         self.Ran_wall()
-                        self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
+                        self._store_wall(cur_room.x, cur_room.y, direction_check, True, True, self.sel_img)
                         self.sel_img = "../assets/visual/textures/walls" # reset sel_img for next room
                     else:
                         self.sel_img += "/empty/"

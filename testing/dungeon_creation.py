@@ -147,7 +147,7 @@ def main():
                     f"{key}: hasdoor={wall_data['hasdoor']} expected={expected_hasdoor}"
                 )
 
-            expected_open = expected_hasdoor and orientation == "S" and room.room_type != "boss"
+            expected_open = expected_hasdoor and room.room_type != "boss"
             if wall_data["isopen"] != expected_open:
                 errors.append(
                     f"{key}: isopen={wall_data['isopen']} expected={expected_open}"
