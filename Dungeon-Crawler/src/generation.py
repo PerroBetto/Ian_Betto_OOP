@@ -1,4 +1,4 @@
-from structures import Dungeon # type: ignore
+from structures import Dungeon  # type: ignore
 from pathlib import Path
 import random
 

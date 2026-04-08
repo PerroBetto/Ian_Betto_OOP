@@ -134,6 +134,11 @@ class Entity(sprite.Sprite):
         self._rect.center = (int(self._position.x), int(self._position.y))
 
     @property
+    def position(self) -> Vector2:
+        """Entity position"""
+        return self._position
+
+    @property
     def HP(self) -> int:
         """Entity hit points"""
         return self._HP

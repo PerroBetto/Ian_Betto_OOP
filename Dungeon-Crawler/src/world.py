@@ -22,6 +22,7 @@ import pygame
 
 # from sound import SoundManager
 from entity import Entity
+from jelly import Jelly
 from player import Player
 # from player import Player
 # from item import Item
@@ -103,6 +104,7 @@ class World:
         self._entities.append(Entity(self, position=pygame.Vector2(400, 100)))
         self._entities.append(Entity(self, position=pygame.Vector2(464, 164)))
         self._entities.append(Entity(self, position=pygame.Vector2(528, 228)))
+        self._entities.append(Jelly(self))
         self._player: Player = Player(self, position=pygame.Vector2(0, 0))
 
     def _ui_init(self) -> None:  # FIXME
@@ -258,9 +260,9 @@ class World:
 
         > this function is to be called by that entity.
 
-        Actions:
-        * collision
-        * attack
+        requests:
+        * s_col: Static collision
+        * get_player: get player position
 
         Args:
             entity (Entity): Entity calling the function.
@@ -275,9 +277,13 @@ class World:
             for e in self._entities:
                 if e is entity:
                     continue
-                if pygame.sprite.collide_rect(entity, e):
+                if pygame.sprite.collide_rect(entity, e):  # type: ignore
                     collides.append(e.rect)
             return collides
+
+        if action == "get_player":
+            return self._player.position
+
         return 0
 
 # --- properties ---
