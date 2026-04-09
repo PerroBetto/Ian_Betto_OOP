@@ -174,9 +174,9 @@ class World:
         # self._curr_room.render()
 
         temp = []
-        temp.append(self._player.render())
+        temp.append(self._player.render(self._time))
         for indx, _entity in enumerate(self._entities):
-            temp.append(self._entities[indx].render())
+            temp.append(self._entities[indx].render(self._time))
 
         return temp
 
@@ -280,9 +280,14 @@ class World:
                 if pygame.sprite.collide_rect(entity, e):  # type: ignore
                     collides.append(e.rect)
             return collides
-
-        if action == "get_player":
+        elif action == "player_pos":
             return self._player.position
+        elif action == "player_col":
+            if pygame.sprite.collide_rect(entity, self._player):  # type: ignore
+                return self._player.rect
+        elif action == "player_dmg_10":
+            self._player.damage(10)
+            print(self._player.HP)
 
         return 0
 

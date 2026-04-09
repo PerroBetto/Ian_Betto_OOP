@@ -38,6 +38,7 @@ class Entity(sprite.Sprite):
                             "_friction",  # float
                             "_sounds",  # dict[str, int]
                             "_HP",  # int
+                            "_invincibility",  # float
                             "_rect",  # Rect
                             "_image",  # Surface
                             "_orientation",  # bool
@@ -77,6 +78,7 @@ class Entity(sprite.Sprite):
         self.speed = speed
         self._clamp_speed: float = clamp_speed
         self.HP = HP if HP else 100
+        self._invincibility: float = 0
 
         self._velocity: Vector2 = Vector2()
         self._friction: float = friction
@@ -178,11 +180,15 @@ class Entity(sprite.Sprite):
 
         self.static_collide()
 
-    def render(self) -> tuple[Surface, Rect]:
+        if self._invincibility > 0:
+            self._invincibility -= delta
+
+    def render(self, time: float) -> tuple[Surface, Rect]:
         """
         Returns the current image and rect of an entity.
         """
-        self.animate()
+        self.animate(time)
+        self.image.set_colorkey((0, 0, 0))
         return (self.image, self.rect)
 
 # ----- entity methods -----
@@ -277,6 +283,12 @@ class Entity(sprite.Sprite):
             else:
                 self._position.y = rect.top + rect.height + (self.rect.height / 2)
 
+    def damage(self, dmg: int) -> None:
+        """Take damage"""
+        if self._invincibility <= 0:
+            self.HP -= dmg
+            self._invincibility = 1
+
     def play_sound(self, sound_key: str) -> None:
         """FIXME"""
         self._world.queue_sound(self._sounds[sound_key])
@@ -338,7 +350,7 @@ class Entity(sprite.Sprite):
 
 # ---- Animation and Sound ----
 
-    def animate(self) -> None:
+    def animate(self, time: float) -> None:
         """
         Animations rely on _assets and changing the current image.
 

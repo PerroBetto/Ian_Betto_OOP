@@ -1,9 +1,11 @@
 """FIXME"""
 from pathlib import Path
 from typing import Any
+from math import sin
+
 
 import pygame
-from pygame import Vector2, Surface
+from pygame import Vector2, Surface, Rect
 
 from entity import Entity
 
@@ -42,6 +44,13 @@ class Player(Entity):
         keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
         super().loop(delta, self.player_movement(keys))
 
+    def render(self, time: float) -> tuple[Surface, Rect]:
+        if self._invincibility > 0:
+            self.image.set_alpha(int(abs(sin(time * 10) * 255)))
+        else:
+            self.image.set_alpha(255)
+        return super().render(time)
+
     def player_movement(self, keys: pygame.key.ScancodeWrapper) -> Vector2:
         """FIXME"""
         # take in inputs
@@ -65,7 +74,7 @@ class Player(Entity):
 
 # ---- player animation ----
 
-    def animate(self) -> None:
+    def animate(self, time: float) -> None:
         """
         player animation
         """
