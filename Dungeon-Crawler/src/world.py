@@ -25,6 +25,7 @@ import pygame
 # from sound import SoundManager
 from entity import Entity
 from player import Player
+from structures import Dungeon
 # from player import Player
 # from item import Item
 # from ui import UI
