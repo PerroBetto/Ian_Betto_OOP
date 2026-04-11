@@ -21,9 +21,9 @@ import pygame
 # from pygame import locals
 
 # from sound import SoundManager
-from entity import Entity
-from jelly import Jelly
-from player import Player
+from entities.entity_mod import Entity
+from entities.jelly import Jelly
+from entities.player import Player
 from items.item import Item
 # from ui import UI
 # from structures import Dungeon, Room
@@ -257,6 +257,10 @@ class World:
         > When the player makes an action (such as swinging a sword or using an item),
 
         > this function is called by the player.
+
+        requests:
+        * action_a // use currently equipped item
+        * action_b
 
         Args:
             action (str): Action ID passed by player.

@@ -16,7 +16,7 @@ import pygame
 from pygame import Vector2, Surface, Rect, key
 from pygame.joystick import Joystick, JoystickType
 
-from entity import Entity
+from entities.entity_mod import Entity
 
 
 class Player(Entity):
@@ -26,7 +26,9 @@ class Player(Entity):
     A player is an entity that is controlled by the game user.
     """
 
-    __slots__: list[str] = ["_controller"   # PlayerController
+    __slots__: list[str] = ["_controller",   # PlayerController
+                            "_action_a_cooldown",  # float // measured in seconds
+                            "_action_b_cooldown",  # float // measured in seconds
                             "_curr_group",  # str
                             "_curr_step"]  # str
 
@@ -43,11 +45,13 @@ class Player(Entity):
         """
         # set player controller
         self._controller: PlayerController = PlayerController()
+        self._action_a_cooldown: float = 0.0
+        self._action_b_cooldown: float = 0.0
 
         # get player sprite sheet
         self._assets: dict[str, Surface] = dict[str, Surface]()
         player_sprite_sheet = Path(__file__).parent / \
-            "../assets/visual/sprites/player/Fish-Sheet.png"
+            "../../assets/visual/sprites/player/Fish-Sheet.png"
         sheet: Surface = pygame.image.load(player_sprite_sheet)
         self._all_frames_from_sheet(sheet, (16, 16), 3, "ESNW", "move")
 
@@ -65,6 +69,19 @@ class Player(Entity):
 
     def loop(self, delta: float, move: Vector2 | None = None) -> None:
         self._controller.handle_inputs()
+
+        if self._controller.action_a and self._action_a_cooldown <= 0.0:
+            self.player_action_a()
+
+        if self._controller.action_b and self._action_b_cooldown <= 0.0:
+            self.player_action_b()
+
+        if self._action_a_cooldown > 0.0:
+            self._action_a_cooldown -= delta
+
+        if self._action_b_cooldown > 0.0:
+            self._action_b_cooldown -= delta
+
         super().loop(delta, self.player_movement())
 
     def render(self, time: float) -> tuple[Surface, Rect]:
@@ -85,6 +102,9 @@ class Player(Entity):
         Returns:
             Vector2: resulting movement vector.
         """
+        # don't move during action:
+        if self._action_a_cooldown > 0.0:
+            return Vector2()
         # take in inputs
         dir: Vector2 = Vector2()
         if self._controller.right_movement:
@@ -103,6 +123,16 @@ class Player(Entity):
             self._curr_group = "S"
 
         return dir
+
+    def player_action_a(self) -> None:
+        """FIXME"""
+        self._action_a_cooldown = .3
+        self._world.player_action("action_a")
+
+    def player_action_b(self) -> None:
+        """FIXME"""
+        self._action_b_cooldown = .3
+        self._world.player_action("action_b")
 
 # ---- player animation ----
 
@@ -132,6 +162,12 @@ class Player(Entity):
                 self._curr_step = "1"
             else:
                 self._curr_step = "0"
+
+        if self._action_a_cooldown > 0.0:
+            self._curr_step = "2"
+        elif self._curr_step == "2":
+            self._curr_step = "1"
+
         self.image = self._assets[f"{self._curr_group}move{self._curr_step}"]
 
 
@@ -186,7 +222,6 @@ class PlayerController:
         self._joystick: JoystickType | None = None
         if self.controller_status():
             self._joystick = Joystick(0)
-            self._joystick.init()
 
     def quit(self) -> None:
         """FIXME"""
