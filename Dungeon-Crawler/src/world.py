@@ -21,9 +21,9 @@ import pygame
 # from pygame import locals
 
 # from sound import SoundManager
-from entity import Entity
-from player import Player
-# from player import Player
+from entities.entity_mod import Entity
+from entities.jelly import Jelly
+from entities.player import Player
 # from item import Item
 # from ui import UI
 # from structures import Dungeon, Room
@@ -100,10 +100,8 @@ class World:
         > the starting room. All regular values should be set.
         """
         self._entities: list[Entity] = list[Entity]()
-        self._entities.append(Entity(self, position=pygame.Vector2(400, 100)))
-        self._entities.append(Entity(self, position=pygame.Vector2(464, 164)))
-        self._entities.append(Entity(self, position=pygame.Vector2(528, 228)))
-        self._player: Player = Player(self, position=pygame.Vector2(0, 0))
+        self._entities.append(Jelly(self, position=pygame.Vector2(600, 255)))
+        self._player: Player = Player(self, position=pygame.Vector2(400, 255))
 
     def _ui_init(self) -> None:  # FIXME
         """
@@ -172,9 +170,9 @@ class World:
         # self._curr_room.render()
 
         temp = []
-        temp.append(self._player.render())
+        temp.append(self._player.render(self._time))
         for indx, _entity in enumerate(self._entities):
-            temp.append(self._entities[indx].render())
+            temp.append(self._entities[indx].render(self._time))
 
         return temp
 
@@ -246,10 +244,18 @@ class World:
 
         > this function is called by the player.
 
+        requests:
+        * action_a // use currently equipped item
+        * action_b
+
         Args:
             action (str): Action ID passed by player.
         """
         print(action)
+
+    def quit_controller(self) -> None:
+        """FIXME"""
+        self._player.quit_controller()
 
     def entity_action(self, entity: Entity, action: str) -> Any:  # FIXME
         """
@@ -258,9 +264,9 @@ class World:
 
         > this function is to be called by that entity.
 
-        Actions:
-        * collision
-        * attack
+        requests:
+        * s_col: Static collision
+        * get_player: get player position
 
         Args:
             entity (Entity): Entity calling the function.
@@ -271,13 +277,19 @@ class World:
         # s_col returns all static objects (walls, pits, etc)
         if action == "s_col":
             collides: list[pygame.Rect] = list[pygame.Rect]()
-            # Check collisions with every rect (including entities)
-            for e in self._entities:
-                if e is entity:
-                    continue
-                if pygame.sprite.collide_rect(entity, e):
-                    collides.append(e.rect)
+            # Check collisions with all walls in a room.
+            """
+            FIXME
+            """
             return collides
+        elif action == "player_pos":
+            return self._player.position
+        elif action == "player_col":
+            if pygame.sprite.collide_rect(entity, self._player):
+                return self._player.rect
+        elif action == "player_dmg_10":
+            self._player.damage(10)
+
         return 0
 
 # --- properties ---
