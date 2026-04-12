@@ -7,9 +7,8 @@ player instance and utilize its actions.
 
 """
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 from math import sin
-from typing_extensions import Self
 
 
 import pygame
