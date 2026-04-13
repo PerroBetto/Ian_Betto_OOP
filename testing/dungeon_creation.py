@@ -259,12 +259,11 @@ def main():
 
             dx, dy = directions[orientation]
             neighbor_exists = (x + dx, y + dy) in dungeon.rooms
+            neighbor_room = dungeon.rooms.get((x + dx, y + dy))
 
             # Match generation.py behavior exactly:
-            # boss south side is always forced to closed boss door texture.
+            # boss south side is closed; if no south neighbor it uses empty/S_1.png.
             expected_hasdoor = neighbor_exists
-            if room.room_type == "boss" and orientation == "S":
-                expected_hasdoor = True
 
             if wall_data["hasdoor"] != expected_hasdoor:
                 errors.append(
@@ -272,10 +271,37 @@ def main():
                 )
 
             expected_open = expected_hasdoor and room.room_type != "boss"
+            if neighbor_room is not None and neighbor_room.room_type == "boss":
+                # Doors facing a boss room are closed by default.
+                expected_open = False
             if wall_data["isopen"] != expected_open:
                 errors.append(
                     f"{key}: isopen={wall_data['isopen']} expected={expected_open}"
                 )
+
+            if room.room_type == "boss":
+                wall_path_text = str(wall_data["sel_img"])
+                wall_path_lower = wall_path_text.lower()
+                if orientation == "S":
+                    if neighbor_exists and not (
+                        wall_path_text.endswith("boss/N_x_Boss.png")
+                        or wall_path_text.endswith("boss/N_x_boss.png")
+                    ):
+                        errors.append(
+                            f"{key}: expected boss closed south texture boss/N_x_Boss.png, got {wall_path_text}"
+                        )
+                    if not neighbor_exists and not wall_path_text.endswith("empty/S_1.png"):
+                        errors.append(
+                            f"{key}: expected no-south-door texture empty/S_1.png, got {wall_path_text}"
+                        )
+                elif neighbor_exists:
+                    # Accept both legacy door naming and new boss naming on connected boss-side walls.
+                    is_boss_named = "_boss.png" in wall_path_lower
+                    is_legacy_door_named = "/door/" in wall_path_lower and "_o_" in wall_path_lower
+                    if not (is_boss_named or is_legacy_door_named):
+                        errors.append(
+                            f"{key}: expected connected boss wall naming '*_Boss.png' or legacy '/door/*_o_*.png', got {wall_path_text}"
+                        )
 
             wall_path = wall_data["sel_img"]
             if not isinstance(wall_path, Path):
@@ -297,10 +323,16 @@ def main():
 
 def test_image_displayment():
 # --- Variables ---
-    pygame.init()
+    pygame.display.init()
+    pygame.font.init()
     window_size = (1440, 810)
     D: Dungeon = Dungeon(seed=random.randint(0, 1000000))
     screen = pygame.display.set_mode(window_size)
+    pygame.display.set_caption("Dungeon Collision Debug View")
+    display_driver = pygame.display.get_driver()
+    headless_driver = display_driver in {"dummy", "offscreen"}
+    if headless_driver:
+        print(f"Display driver '{display_driver}' is headless; window may not be visible. Auto-closing preview shortly.")
     clock = pygame.time.Clock()
     debug_font = pygame.font.SysFont("consolas", 18)
     show_debug = True
@@ -327,8 +359,28 @@ def test_image_displayment():
     wall_surfaces: dict[str, pygame.Surface] = {}
     
 # --- Select random room for testing (excluding boss rooms) ---
-    random_room = random.choice([room for room in D.rooms.values() if room.room_type != "boss"])
-    print(f"Testing {random_room.room_type} room at ({random_room.x}, {random_room.y})")
+    # random_room = random.choice([room for room in D.rooms.values() if room.room_type != "boss"])
+    # print(f"Testing {random_room.room_type} room at ({random_room.x}, {random_room.y})")
+    boss_room = next((room for room in D.rooms.values() if room.room_type == "boss"), None)
+    boss_adjacent_rooms: list[Room] = []
+    if boss_room is not None:
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            adj_room = D.rooms.get((boss_room.x + dx, boss_room.y + dy))
+            if adj_room is not None and adj_room.room_type != "boss":
+                boss_adjacent_rooms.append(adj_room)
+
+    if boss_adjacent_rooms:
+        random_room = random.choice(boss_adjacent_rooms)
+        print(
+            f"Testing {random_room.room_type} room at ({random_room.x}, {random_room.y}) "
+            f"adjacent to boss at ({boss_room.x}, {boss_room.y})"
+        )
+    else:
+        random_room = random.choice([room for room in D.rooms.values() if room.room_type != "boss"])
+        print(
+            f"No adjacent non-boss room found near boss; fallback testing "
+            f"{random_room.room_type} room at ({random_room.x}, {random_room.y})"
+        )
 
 # --- Load walls ---
     for orientation in directions:
@@ -383,11 +435,14 @@ def test_image_displayment():
             wall_rects[orientation] = wall_image.get_rect(center=room_rect.center)
 # --- Main loop ---
     running = True
+    start_ms = pygame.time.get_ticks()
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_ESCAPE, pygame.K_q):
+                    running = False
                 if event.key == pygame.K_d:
                     show_debug = not show_debug
                 if event.key == pygame.K_h:
@@ -437,6 +492,8 @@ def test_image_displayment():
         # Update the display
         pygame.display.flip()  
         clock.tick(60)  # Limit to 60 FPS
+        if headless_driver and pygame.time.get_ticks() - start_ms > 2500:
+            running = False
 
     pygame.quit()
 

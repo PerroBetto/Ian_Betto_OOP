@@ -34,17 +34,30 @@ class Generation:
             if cur_room.room_type == "enemy" or cur_room.room_type == "puzzle" or cur_room.room_type == "start":
                 for direction_check, (x, y) in directions:
                     if direction_check == "S":
-                        self.sel_img += "/door/S_"
                         if (cur_room.x + x, cur_room.y + y) in self.dungeon.rooms:
-                            self.sel_img += "o.png"
+                            if self.dungeon.rooms[(cur_room.x + x, cur_room.y + y)].room_type == "boss":
+                                self.sel_img += "/boss/S_x_Boss.png"
+                                self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)    
+                                self.sel_img = "Dungeon-Crawler/assets/visual/textures/walls" # reset sel_img for next wall
+                                break # South wall of boss room will always be closed, so we can break out of the loop after storing the wall
+                            self.sel_img += "/door/S_o.png"
                             self._store_wall(cur_room.x, cur_room.y, direction_check, True, True, self.sel_img)
+                            self.sel_img = "Dungeon-Crawler/assets/visual/textures/walls" # reset sel_img for next wall
+                            break # South wall of non-boss room will always be open, so we can break out of the loop after storing the wall
                         else:
-                            self.sel_img += "x.png"
+                            self.sel_img += "/empty/S_1.png"
                             self._store_wall(cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
                         self.sel_img = "Dungeon-Crawler/assets/visual/textures/walls" # reset sel_img for next wall
                         continue
 
                     if (cur_room.x + x, cur_room.y + y) in self.dungeon.rooms:
+                        if self.dungeon.rooms[(cur_room.x + x, cur_room.y + y)].room_type == "boss":
+                            self.sel_img += "/boss/"
+                            self.Sel_ori(direction_check)
+                            self.sel_img += "x_Boss.png"
+                            self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
+                            self.sel_img = "Dungeon-Crawler/assets/visual/textures/walls" # reset sel_img for next room
+                            continue
                         self.sel_img += "/door/"
                         self.Sel_ori(direction_check)
                         self.sel_img += "o_"
@@ -60,8 +73,14 @@ class Generation:
             if cur_room.room_type == "boss":
                 for direction_check, (x, y) in directions:
                     if direction_check == "S":
-                        self.sel_img += "/boss/N_x_boss.png" # By default, boss south wall is closed
-                        self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
+                        if (cur_room.x + x, cur_room.y + y) in self.dungeon.rooms:
+                            # Boss south door exists but remains closed by default.
+                            self.sel_img += "/boss/N_x_Boss.png"
+                            self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
+                        else:
+                            # No south door: use empty south wall variant.
+                            self.sel_img += "/empty/S_1.png"
+                            self._store_wall(cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
                         self.sel_img = "Dungeon-Crawler/assets/visual/textures/walls"
                         continue
 
@@ -72,7 +91,7 @@ class Generation:
                         self.Ran_wall()
                         self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
                     else:
-                        self.sel_img += "/boss/N_x_boss.png" # By defualt, the boss room will remain closed till changed later
+                        self.sel_img += "/boss/N_x_Boss.png" # By defualt, the boss room will remain closed till changed later
                         self._store_wall(cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
                     self.sel_img = "Dungeon-Crawler/assets/visual/textures/walls" # reset sel_img for next wall
                     
