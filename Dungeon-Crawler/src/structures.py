@@ -1,11 +1,17 @@
 import random
 from collections import deque
+from xml.dom.minidom import Entity
 
 import pygame
 from pygame import locals
 
+from testing.generation import Generation
+
 
 class Room:
+    """
+    Room class for handling cords, used by Dungeon class
+    """
     def __init__(self, x, y, room_type="empty"):
         self.x = x
         self.y = y
@@ -24,35 +30,65 @@ class Room:
 
 
 class Dungeon:
+    """
+    Dungeon class to create a dungeon, requires Room class
+    """
     def __init__(self, seed, total_rooms=12, min_puzzle_rooms=4):
-        self._seed = seed
+        self.seed = seed
         self.total_rooms = total_rooms
         self.min_puzzle_rooms = min_puzzle_rooms
+        self.native_size = (256, 160)
+        self.render_scale = Entity._SCALE
         self.rooms = {}  # {(x, y): Room}
-        self.rng = random.Random(self._seed)  # Independent RNG
+        self.rng = random.Random(seed)  # Independent RNG
+        
         self.generate()
+        self.generation = Generation(self)
+        self.generation.Apply_textures()
+        self.base_resolution: tuple[int, int] = (1440, 810)
+        self.res: tuple[int, int] = self._resolve_game_resolution()
 
-    @property
-    def seed(self):
-        return self._seed
-    
-    @seed.setter
-    def seed(self, new_seed):
-        self._seed = new_seed
-        self.rng = random.Random(self._seed)
+    def _resolve_game_resolution(self) -> tuple[int, int]:
+        """
+        Resolve active game resolution from Game singleton when possible.
+        Falls back to the project's default game resolution.
 
-    def get_roomdata(self, x, y):
-        return self.rooms.get((x, y), None)
-    
-    def get_roomtype(self, x, y):
-        room = self.get_roomdata(x, y)
-        return room.room_type if room else None
+        Returns:
+            tuple[int, int]: The active game resolution.
+        """
+        default_res = self.base_resolution
+        game_obj = getattr(Game, "_instance", None)
+
+        # If singleton isn't alive yet, try creating a lightweight instance.
+        if game_obj is None:
+            try:
+                game_obj = Game(seed=self.seed)
+            except Exception:
+                return default_res
+
+        try:
+            res = game_obj.resolution
+            if (
+                isinstance(res, tuple)
+                and len(res) == 2
+                and all(isinstance(v, int) for v in res)
+            ):
+                return res
+        except Exception:
+            pass
+        return default_res
 
     def generate(self):  # Call this function to generate dungeon
+        """
+        Creates a dungeon
+        """
         self._generate_layout()
         self._assign_room_types()
 
     def _generate_layout(self):
+        """
+        Generates the layout for dungeon 
+        """
         start = Room(0, 0, "start")
         self.rooms[(0, 0)] = start
         active_rooms = [start]
@@ -73,6 +109,15 @@ class Dungeon:
                 active_rooms.append(new_room)
 
     def _find_farthest_room(self, start):
+
+        """
+        Finding the farthest room for setting the dungeon room to the farthest room away.
+
+        Args:
+            start (Room): The starting room (usually the one at (0, 0)).
+        Returns:
+            Room: The farthest room from the starting room.
+        """
         visited = set()
         queue = deque([(start, 0)])
         farthest = (start, 0)
@@ -91,6 +136,9 @@ class Dungeon:
         return farthest[0]
 
     def _assign_room_types(self):
+        """
+        Assigns room types to the active rooms list, required to be called after _generate_layout()
+        """
         all_rooms = list(self.rooms.values())
 
         start_room = self.rooms[(0, 0)]
@@ -117,8 +165,8 @@ class Dungeon:
         for room in remaining:
             if room.room_type == "empty":
                 room.room_type = "enemy"
-
-    def wall_hitbox(self, room: Room, orientation: str) -> list[list[int, int, int, int, int]]:
+    
+    def wall_hitbox(self, room: Room, orientation: str) -> list[pygame.Rect]:
         """
         Checks if the wall selected (depending on orientation) 
         has a door and is open, returning two types of hitboxes for that wall for 3 different scenarios:
@@ -131,12 +179,7 @@ class Dungeon:
             room (Room): the room we are checking
             orientation (str): the wall orientation we are checking (W, N, E, S)
         returns:
-            List[list[
-                    int(X-cord)
-                    int (Y-cord)
-                    int (Width)
-                    int (Height)
-                    int(rotation)]]
+            list[pygame.Rect]
         """
         wall_data = self.generation.room_walls.get((room.x, room.y, orientation))
         if wall_data is None:
@@ -149,43 +192,40 @@ class Dungeon:
         hasdoor = wall_data["hasdoor"]
         isopen = wall_data["isopen"]
 
-        # Fixed-anchor hitboxes for single-resolution testing.
-        # Room bounds: left=80, top=5, right=1200, bottom=725.
-        # Door opening center band: x=[592..688], y=[405..485].
         if orientation == "N":
             if hasdoor and isopen:
                 return [
-                    [80, 5, 512, 80, 0],   # left segment
-                    [592, 5, 96, 80, 0],   # door band
-                    [688, 5, 512, 80, 0],  # right segment
+                    pygame.Rect(80, 5, 585, 160),   # left segment
+                    pygame.Rect(665, 5, 115, 160),   # door band
+                    pygame.Rect(780, 5, 590, 160),  # right segment
                 ]
-            return [[80, 5, 1120, 80, 0]]
+            return [pygame.Rect(80, 5, 1290, 160)]
 
         if orientation == "S":
             if hasdoor and isopen:
                 return [
-                    [80, 725, 512, 80, 0],   # left segment
-                    [592, 725, 96, 80, 0],   # narrow door band
-                    [688, 725, 512, 80, 0],  # right segment
+                    pygame.Rect(80, 725, 555, 80),   # left segment
+                    pygame.Rect(633, 725, 173, 80),   # narrow door band
+                    pygame.Rect(804, 725, 570, 80),  # right segment
                 ]
-            return [[80, 725, 1120, 80, 0]]
+            return [pygame.Rect(80, 725, 1290, 80)]
 
         if orientation == "E":
             if hasdoor and isopen:
                 return [
-                    [1200, 5, 80, 400, 0],    # top segment
-                    [1200, 405, 80, 80, 0],   # door band
-                    [1200, 485, 80, 320, 0],  # bottom segment
+                    pygame.Rect(1200, 5, 170, 370),    # top segment
+                    pygame.Rect(1200, 375, 170, 110),   # door band
+                    pygame.Rect(1200, 485, 170, 320),  # bottom segment
                 ]
-            return [[1200, 5, 80, 800, 0]]
+            return [pygame.Rect(1200, 5, 170, 800)]
 
         if orientation == "W":
             if hasdoor and isopen:
                 return [
-                    [80, 5, 80, 400, 0],    # top segment
-                    [80, 405, 80, 80, 0],   # door band
-                    [80, 485, 80, 320, 0],  # bottom segment
+                    pygame.Rect(80, 5, 164, 375),    # top segment
+                    pygame.Rect(80, 380, 165, 110),   # door band
+                    pygame.Rect(80, 490, 164, 315),  # bottom segment
                 ]
-            return [[80, 5, 80, 800, 0]]
+            return [pygame.Rect(80, 5, 164, 800)]
 
         raise ValueError(f"Invalid orientation for wall hitbox: {orientation}")

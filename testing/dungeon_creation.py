@@ -42,12 +42,10 @@ class Dungeon:
         self.total_rooms = total_rooms
         self.min_puzzle_rooms = min_puzzle_rooms
         self.native_size = (256, 160)
-        self.wall_thickness_EW = 32
-        self.wall_thickness_NS = 32
-        self.door_size = 32
         self.render_scale = Entity._SCALE
         self.rooms = {}  # {(x, y): Room}
         self.rng = random.Random(seed)  # Independent RNG
+        
         self.generate()
         self.generation = Generation(self)
         self.generation.Apply_textures()
