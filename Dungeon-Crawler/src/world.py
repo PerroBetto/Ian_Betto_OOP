@@ -143,7 +143,7 @@ class World:
             for indx, _item in enumerate(self._items):
                 self._items[indx].loop(delta)
 
-        print(self._inventory)
+        # print(self._inventory)
 
         self.update_room
         self.update_ui
@@ -323,3 +323,54 @@ class World:
         """Music currently playing. Handled by sound manager."""
         # return self._sound_manager.Getmusic
         return ""  # FIXME
+
+    @property
+    def data(self) -> dict[str, Any]:
+        """World dictionary data."""
+        data: dict[str, Any] = dict[str, Any]()
+
+        # Store player data
+        data['player'] = {
+            'position': self._player.position,
+            'hp': self._player.HP,
+            'speed': self._player.speed
+        }
+
+        # store all present entity data
+        entity_data: list[dict] = list[dict]()
+        for entity in self._entities:
+            entity_data.append(
+                {
+                    'name': entity.__str__(),
+                    'position': entity.position,
+                    'hp': entity.HP,
+                    'speed': entity.speed
+                }
+            )
+        data['entities'] = entity_data
+
+        # pass item data
+
+        data['items'] = {}
+
+        grounded_items: list[dict] = list[dict]()
+        for item in self._items:
+            grounded_items.append(
+                {
+                    'name': item.__str__(),
+                    'position': item.position
+                }
+            )
+        data['items']['grounded'] = grounded_items
+
+        inventory_items: list[dict] = list[dict]()
+        for item in self._inventory:
+            inventory_items.append(
+                {
+                    'name': item.__str__(),
+                    'position': item.position
+                }
+            )
+        data['items']['inventory'] = inventory_items
+
+        return data
