@@ -7,15 +7,23 @@ player instance and utilize its actions.
 
 """
 from pathlib import Path
-from typing import Any, Self
+from typing import Any
 from math import sin
+
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 
 
 import pygame
 from pygame import Vector2, Surface, Rect, key
 from pygame.joystick import Joystick, JoystickType
 
-from entities.entity_mod import Entity
+try:
+    from .entity_mod import Entity
+except ImportError:
+    from entities.entity_mod import Entity
 
 
 class Player(Entity):

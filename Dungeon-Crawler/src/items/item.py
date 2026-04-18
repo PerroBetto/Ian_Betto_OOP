@@ -17,6 +17,19 @@ from pygame import Vector2, sprite, Surface, Rect
 class Item(sprite.Sprite):
     """
     Item class.
+
+    An item is an in-game object that can be interacted with through player collision.
+    When an item collides with the player character, the item disappears from the render
+    and is stored in the player inventory.
+
+    Special items can have special behaviors that aren't initialized here. Some
+    Examples can include:
+    * A sword that can be swung by the player.
+    * A key that unlocks a door.
+    * A bomb that deals area of effect damage.
+
+    The base class of Item doesn't do much other than exist in the game world to be picked up,
+    and when it is stays in the inventory.
     """
 
     _SCALE: int = 5
@@ -45,7 +58,17 @@ class Item(sprite.Sprite):
                  type: int = SINGLEUSE,
                  assets: dict[str, Surface] | None = None,
                  image: Surface | None = None) -> None:
-        """FIXME"""
+        """
+        Item class object.
+
+        Args:
+            world (Any): The world inheriting this Item.
+            position (Vector2, optional): The position of this Item. Defaults to Vector2().
+            state (int, optional): Item state to start. Defaults to GROUNDED.
+            type (int, optional): Item type. Helps define behavior. Defaults to SINGLEUSE.
+            assets (dict[str, Surface] | None, optional): Image assets. Defaults to None.
+            image (Surface | None, optional): Current image to display. Defaults to None.
+        """
         super().__init__()
         from world import World
         self._world: World = world
@@ -58,11 +81,17 @@ class Item(sprite.Sprite):
         self._assets = assets
         self.__image_init(image)
 
-    def __image_init(self, img_in: Surface | None) -> None:
-        """FIXME"""
+    def __image_init(self, img_in: Surface | None = None) -> None:
+        """
+        Item Image initialization.
+
+        Args:
+            img_in (Surface | None): Image to display. Defaults to None.
+        """
         temp_img: Surface = Surface((16 * self._SCALE, 16 * self._SCALE))
         temp_img.fill((255, 255, 255))
         if img_in:
+            #  Set the image
             temp_img = img_in.convert_alpha()
 
         self.image: Surface = temp_img
@@ -91,7 +120,13 @@ class Item(sprite.Sprite):
 
     def set_state(self, new_state: int) -> None:
         """
-        Check that state is valid
+        Set Item state.
+
+        Args:
+            new_state (int): State to switch to.
+
+        Raises:
+            TypeError: Raised if state passed is invalid.
         """
         if new_state not in [self.GROUNDED, self.COLLECTED, self.USED]:
             raise TypeError("Item state not valid.")
@@ -100,7 +135,7 @@ class Item(sprite.Sprite):
 
     @property
     def type(self) -> int:
-        """item type"""
+        """Item type (for defining behavior)"""
         return self._type
 
     @type.setter
@@ -109,7 +144,13 @@ class Item(sprite.Sprite):
 
     def set_type(self, new_type: int) -> None:
         """
-        check that type is valid
+        Switch Item type.
+
+        Args:
+            new_type (int): Type to set Item to.
+
+        Raises:
+            TypeError: Raised if type passed is invalid.
         """
         if new_type not in [self.SINGLEUSE, self.MULTIUSE]:
             raise TypeError("Item type not valid.")
@@ -119,18 +160,33 @@ class Item(sprite.Sprite):
 # ---- base methods ----
 
     def loop(self, delta: float) -> None:
-        """FIXME"""
+        """
+        Item game loop.
+
+        > If the state of the item is GROUNDED, check for player collisions.
+
+        Args:
+            delta (float): Delta time.
+        """
         if self.state == self.GROUNDED:
+            # Detect when the item is collected by the player.
             self.check_player_touched()
 
     def render(self) -> tuple[Surface, Rect]:
-        """FIXME"""
+        """
+        Item game render.
+
+        Returns:
+            tuple[Surface, Rect]: Render parameters.
+        """
+        self.image.set_colorkey((0, 0, 0))
         return (self.image, self.rect)
 
 # ---- item methods ----
 
     def check_player_touched(self) -> None:
-        """FIXME"""
+        """Check if the player collects this item by colliding with it."""
         if self._world.item_action(self, "grabbed"):
+            #  Change state, move it very far off screen.
             self.set_state(self.COLLECTED)
             self._position = Vector2(-999, -999)
