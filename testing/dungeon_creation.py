@@ -219,7 +219,7 @@ def main():
     generation = dungeon.generation
     floor_texture = (
         PROJECT_ROOT
-        / "Dungeon_Crawler"
+        / "Dungeon-Crawler"
         / "assets"
         / "visual"
         / "textures"

@@ -50,6 +50,7 @@ class Game:
                  , "_screen"  # Screen: Manage display
                  , "_framerate"  # Clock: Manage framerate
                  , "_running"  # boolean: game status
+                 , "_audio_enabled"  # boolean: whether mixer initialized
                  , "_curr_music"  # str: playing currently
                  , "_world"  # World: Object
                  , "_seed"]  # seed: any
@@ -82,6 +83,7 @@ class Game:
         else:
             self._resolution = resolution
         self._running: bool = False
+        self._audio_enabled: bool = False
         self._framerate: pygame.time.Clock = pygame.time.Clock()
 
         pygame.mixer.pre_init()  # No changes
@@ -111,8 +113,13 @@ class Game:
         pygame.init()
         self._screen: pygame.Surface = pygame.display.set_mode(
             self._resolution, pygame.NOFRAME)
-        pygame.mixer.init()
-        pygame.mixer.set_num_channels(16)
+        try:
+            pygame.mixer.init()
+            pygame.mixer.set_num_channels(16)
+            self._audio_enabled = True
+        except pygame.error as exc:
+            print(f"Audio disabled: {exc}")
+            self._audio_enabled = False
         
         self._running = True
         self._world: World = World(self._seed)
@@ -187,6 +194,9 @@ class Game:
 
         All of the above should be done at the _VOLUME constant.
         """
+        if not self._audio_enabled:
+            return
+
         # set volumes
         music.set_volume(self._VOLUME)
 

@@ -1,12 +1,18 @@
 import random
 from collections import deque
-from xml.dom.minidom import Entity
 
 import pygame
 from pygame import locals
 
-from testing.generation import Generation
+try:
+    from .entities.entity_mod import Entity
+except ImportError:
+    from entities.entity_mod import Entity
 
+try:
+    from .generation import Generation
+except ImportError:
+    from generation import Generation
 
 class Room:
     """
@@ -46,37 +52,7 @@ class Dungeon:
         self.generation = Generation(self)
         self.generation.Apply_textures()
         self.base_resolution: tuple[int, int] = (1440, 810)
-        self.res: tuple[int, int] = self._resolve_game_resolution()
-
-    def _resolve_game_resolution(self) -> tuple[int, int]:
-        """
-        Resolve active game resolution from Game singleton when possible.
-        Falls back to the project's default game resolution.
-
-        Returns:
-            tuple[int, int]: The active game resolution.
-        """
-        default_res = self.base_resolution
-        game_obj = getattr(Game, "_instance", None)
-
-        # If singleton isn't alive yet, try creating a lightweight instance.
-        if game_obj is None:
-            try:
-                game_obj = Game(seed=self.seed)
-            except Exception:
-                return default_res
-
-        try:
-            res = game_obj.resolution
-            if (
-                isinstance(res, tuple)
-                and len(res) == 2
-                and all(isinstance(v, int) for v in res)
-            ):
-                return res
-        except Exception:
-            pass
-        return default_res
+        self.res: tuple[int, int] = self.base_resolution
 
     def generate(self):  # Call this function to generate dungeon
         """
