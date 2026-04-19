@@ -337,7 +337,7 @@ class World:
         }
 
         # store all present entity data
-        entity_data: list[dict] = list[dict]()
+        entity_data: list[dict[str, Any]] = list[dict[str, Any]]()
         for entity in self._entities:
             entity_data.append(
                 {
@@ -353,7 +353,7 @@ class World:
 
         data['items'] = {}
 
-        grounded_items: list[dict] = list[dict]()
+        grounded_items: list[dict[str, Any]] = list[dict[str, Any]]()
         for item in self._items:
             grounded_items.append(
                 {
@@ -363,7 +363,7 @@ class World:
             )
         data['items']['grounded'] = grounded_items
 
-        inventory_items: list[dict] = list[dict]()
+        inventory_items: list[dict[str, Any]] = list[dict[str, Any]]()
         for item in self._inventory:
             inventory_items.append(
                 {
