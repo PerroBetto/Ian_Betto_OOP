@@ -39,8 +39,6 @@ class Entity(sprite.Sprite):
                             "_sounds",  # dict[str, int]
                             "_HP",  # int
                             "_invincibility",  # float
-                            "_rect",  # Rect
-                            "_image",  # Surface
                             "_orientation",  # bool
                             "_curr_orient",  # bool
                             "_anim_timer_top",  # float

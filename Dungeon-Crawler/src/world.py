@@ -24,7 +24,7 @@ import pygame
 from entities.entity_mod import Entity
 from entities.jelly import Jelly
 from entities.player import Player
-# from item import Item
+from items.item import Item
 # from ui import UI
 # from structures import Dungeon, Room
 
@@ -43,6 +43,7 @@ class World:
                  , "_sounds"  # : list[int] // int representation of sound
                  , "_entities"  # : list[Entity]
                  , "_player"  # : Player
+                 , "_items"  # Item // items in the room
                  , "_item_slot"  # : Item // item to be used with player action
                  , "_inventory"  # : list[Item]
                  , "_ui"  # : UI
@@ -67,8 +68,10 @@ class World:
         self._entity_init()
 
         # initialize items
+        self._items: list[Item] = list[Item]()
+        self._items.append(Item(self, position=pygame.Vector2(800, 0)))
         # self._item_slot : Item = Item()
-        # self._inventory : list[Item] = list[Item]()
+        self._inventory : list[Item] = list[Item]()
 
         # initialize UI
         self._ui_init()
@@ -136,6 +139,12 @@ class World:
             self._entities[indx].loop(delta)
             # print(f"{_entity}: {_entity.move_speed}")
 
+        if len(self._items):
+            for indx, _item in enumerate(self._items):
+                self._items[indx].loop(delta)
+
+        # print(self._inventory)
+
         self.update_room
         self.update_ui
         # print("world-loop")
@@ -173,6 +182,10 @@ class World:
         temp.append(self._player.render(self._time))
         for indx, _entity in enumerate(self._entities):
             temp.append(self._entities[indx].render(self._time))
+
+        if len(self._items):
+            for indx, _item in enumerate(self._items):
+                temp.append(self._items[indx].render())
 
         return temp
 
@@ -237,7 +250,7 @@ class World:
     #     """
     #     return bool()
 
-    def player_action(self, action: str) -> None:  # FIXME
+    def player_action(self, action: str) -> None:
         """
         Get player actions and change the world accordingly.
         > When the player makes an action (such as swinging a sword or using an item),
@@ -257,7 +270,7 @@ class World:
         """FIXME"""
         self._player.quit_controller()
 
-    def entity_action(self, entity: Entity, action: str) -> Any:  # FIXME
+    def entity_action(self, entity: Entity, action: str) -> Any:
         """
         Get entity actons and change the world accordingly.
         > Whenever an entity makes an action (such as attacking)
@@ -292,6 +305,17 @@ class World:
 
         return 0
 
+# ---- item methods ----
+
+    def item_action(self, item: Item, action: str) -> Any:
+        """FIXME"""
+        if action == "grabbed":
+            if pygame.sprite.collide_rect(item, self._player):
+                self._inventory.append(item)
+                self._items.remove(item)
+                return True
+        return 0
+
 # --- properties ---
 
     @property
@@ -299,3 +323,54 @@ class World:
         """Music currently playing. Handled by sound manager."""
         # return self._sound_manager.Getmusic
         return ""  # FIXME
+
+    @property
+    def data(self) -> dict[str, Any]:
+        """World dictionary data."""
+        data: dict[str, Any] = dict[str, Any]()
+
+        # Store player data
+        data['player'] = {
+            'position': self._player.position,
+            'hp': self._player.HP,
+            'speed': self._player.speed
+        }
+
+        # store all present entity data
+        entity_data: list[dict[str, Any]] = list[dict[str, Any]]()
+        for entity in self._entities:
+            entity_data.append(
+                {
+                    'name': entity.__str__(),
+                    'position': entity.position,
+                    'hp': entity.HP,
+                    'speed': entity.speed
+                }
+            )
+        data['entities'] = entity_data
+
+        # pass item data
+
+        data['items'] = {}
+
+        grounded_items: list[dict[str, Any]] = list[dict[str, Any]]()
+        for item in self._items:
+            grounded_items.append(
+                {
+                    'name': item.__str__(),
+                    'position': item.position
+                }
+            )
+        data['items']['grounded'] = grounded_items
+
+        inventory_items: list[dict[str, Any]] = list[dict[str, Any]]()
+        for item in self._inventory:
+            inventory_items.append(
+                {
+                    'name': item.__str__(),
+                    'position': item.position
+                }
+            )
+        data['items']['inventory'] = inventory_items
+
+        return data
