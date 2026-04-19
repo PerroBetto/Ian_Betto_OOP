@@ -27,6 +27,7 @@ class Entity(sprite.Sprite):
     """
 
     _SCALE: int = 5
+    _INV_SEC: float = 0.1
 
     __slots__: list[str] = ["_world"  # Any (World this entity belongs to)
                             "_assets",  # dict[str, Surface]
@@ -269,7 +270,7 @@ class Entity(sprite.Sprite):
         """Take damage"""
         if self._invincibility <= 0:
             self.HP -= dmg
-            self._invincibility = 1
+            self._invincibility = self._INV_SEC
 
     def play_sound(self, sound_key: str) -> None:
         """FIXME"""
@@ -340,6 +341,3 @@ class Entity(sprite.Sprite):
         """
 
 # ---- overloads ----
-
-    def __str__(self) -> str:
-        return "Entity"

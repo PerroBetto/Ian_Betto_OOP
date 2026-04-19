@@ -25,6 +25,7 @@ from entities.entity_mod import Entity
 from entities.jelly import Jelly
 from entities.player import Player
 from items.item import Item
+from items.projectile import Projectile
 from items.bubble import BubbleWeapon
 # from ui import UI
 # from structures import Dungeon, Room
@@ -102,6 +103,7 @@ class World:
         """
         self._entities: list[Entity] = list[Entity]()
         self._entities.append(Jelly(self, position=pygame.Vector2(600, 255)))
+        self._entities.append(Jelly(self, position=pygame.Vector2(300, 755)))
         self._player: Player = Player(self, position=pygame.Vector2(400, 255))
 
     def _ui_init(self) -> None:  # FIXME
@@ -150,7 +152,8 @@ class World:
 
         for indx, _entity in enumerate(self._entities):
             self._entities[indx].loop(delta)
-            # print(f"{_entity}: {_entity.move_speed}")
+            if _entity.HP <= 0:
+                self._entities.pop(indx)
 
         if len(self._items):
             for indx, _item in enumerate(self._items):
@@ -327,13 +330,19 @@ class World:
 
 # ---- item methods ----
 
-    def item_action(self, item: Item, action: str) -> Any:
+    def item_action(self, item: Item, action: str,
+                    projectile: Projectile | None = None) -> Any:
         """FIXME"""
         if action == "grabbed":
             if pygame.sprite.collide_rect(item, self._player):
                 self._inventory.append(item)
                 self._items.remove(item)
                 return True
+        if action == "attack":
+            for entity in self._entities:
+                if projectile and pygame.sprite.collide_rect(projectile, entity):
+                    entity.damage(projectile.damage_points)
+                    return True
         return 0
 
 # --- properties ---

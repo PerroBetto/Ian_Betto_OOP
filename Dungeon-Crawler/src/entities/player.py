@@ -27,6 +27,8 @@ class Player(Entity):
     A player is an entity that is controlled by the game user.
     """
 
+    _INV_SEC = 1
+
     __slots__: list[str] = ["_controller",   # PlayerController
                             "_action_a_cooldown",  # float // measured in seconds
                             "_action_b_cooldown",  # float // measured in seconds

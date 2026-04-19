@@ -12,7 +12,8 @@ class Projectile(sprite.Sprite):
 
     _SCALE: int = 5
 
-    __slots__: list[str] = ["_assets",  # dict[str, Surface]
+    __slots__: list[str] = ["_dmg",  # int
+                            "_assets",  # dict[str, Surface]
                             "_position",  # Vector2
                             "_velocity",  # Vector2
                             "_speed",  # float
@@ -26,6 +27,8 @@ class Projectile(sprite.Sprite):
                  image: Surface | None = None) -> None:
         """FIXME"""
         super().__init__()
+
+        self._dmg: int = 1
 
         # Vector inits
         self._position: Vector2 = position
@@ -80,6 +83,15 @@ class Projectile(sprite.Sprite):
     def move_speed(self) -> float:
         """Speed projectile is moving at. Measured pixles/second"""
         return self._velocity.magnitude()
+
+    @property
+    def damage_points(self) -> int:
+        """Amount of damage a projectile deals."""
+        return self._dmg
+
+    @damage_points.setter
+    def damage_points(self, other: int) -> None:
+        self._dmg = other
 
 # ==== base methods ====
 
