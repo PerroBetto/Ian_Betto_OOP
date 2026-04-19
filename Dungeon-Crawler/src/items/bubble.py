@@ -8,12 +8,14 @@ The weapon produces bubbles. The projectile is the bubble itself.
 """
 from typing import Any
 
-from pygame import Vector2, Surface, Rect
+from pygame import sprite, Vector2, Surface, Rect
 
 try:
     from .item import Item
+    from .projectile import Projectile
 except ImportError:
     from items.item import Item
+    from items.projectile import Projectile
 
 
 class BubbleWeapon(Item):
@@ -25,6 +27,8 @@ class BubbleWeapon(Item):
 
     If there are no collisions with entities, slows down and pops on its own.
     """
+
+    __slots__ = ["_bubbles"]  # list(Bubble)
 
     def __init__(self, world: Any,
                  position: Vector2 = Vector2(-999, -999),
@@ -40,4 +44,37 @@ class BubbleWeapon(Item):
         * state = COLLECTED: Already collected into the player inventory.
         * type = MULTIUSE: Can be used multiple times.
         """
+        self._bubbles: list[Bubble] = list[Bubble]()
         super().__init__(world, position, state, type, assets, image)
+
+    def loop(self, delta: float) -> None:
+        """Loop over all bubble projectiles"""
+        for bubble in self._bubbles:
+            bubble.loop(delta)
+
+    def render_projectiles(self) -> list[tuple[Surface, Rect]]:
+        """
+        Item Projectile render.
+        """
+        to_render: list[tuple[Surface, Rect]] = list[tuple[Surface, Rect]]()
+        for bubble in self._bubbles:
+            to_render.append(bubble.render())
+        return to_render
+
+    def item_action_a(self, player_pos: Vector2, player_look: tuple[int, int]) -> None:
+        """Called when used by the player."""
+        new_bubble: Bubble = Bubble(player_pos)
+        new_bubble.push(Vector2(player_look[0], player_look[1]))
+        self._bubbles.append(new_bubble)
+
+
+class Bubble(Projectile):
+    """
+    Bubble projectile class.
+
+    When produced, moves forwards in the world, damages entities, and pops.
+    """
+
+    def __init__(self, position: Vector2) -> None:
+        """Bubble init"""
+        super().__init__(position, speed=400.0, friction=5.0)

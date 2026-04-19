@@ -29,7 +29,7 @@ class Entity(sprite.Sprite):
     _SCALE: int = 5
 
     __slots__: list[str] = ["_world"  # Any (World this entity belongs to)
-                            "_assets",  # dict[str, int]
+                            "_assets",  # dict[str, Surface]
                             "_position",  # Vector2
                             "_prev_position",  # Vector2
                             "_velocity",  # Vector2
@@ -81,6 +81,7 @@ class Entity(sprite.Sprite):
         self._velocity: Vector2 = Vector2()
         self._friction: float = friction
         self._sounds: dict[str, int] = dict[str, int]()
+        self._sound_init()
 
         self._assets: dict[str, Surface] = dict[str, Surface]()
         if assets:
@@ -168,17 +169,14 @@ class Entity(sprite.Sprite):
         """
         self.animate(time)
         try:
-            if self.image:
-                self.image.set_colorkey((0, 0, 0))
-            else:
-                raise AttributeError()
+            self.image.set_colorkey((0, 0, 0))
         except AttributeError:
             raise
         return (self.image, self.rect)
 
 # ----- entity methods -----
 
-    def move(self, delta: float, dir: Vector2 | None = None) -> None:
+    def move(self, delta: float, dir: Vector2 = Vector2()) -> None:
         """
         Movement for an Entity object.
 
@@ -187,10 +185,6 @@ class Entity(sprite.Sprite):
         Args:
             dir (Vector2 | None, optional): Direction of acceleration.
         """
-        # add direction
-        if not dir:
-            dir = Vector2()
-
         self._velocity += Vector2(dir.x * self.speed, dir.y * self.speed)
 
         # handle x
@@ -218,9 +212,11 @@ class Entity(sprite.Sprite):
         except ValueError:
             pass
 
-        self._position += (self._velocity * delta)
-        # print(self._position)
-        self.set_rect()
+        # self._position += (self._velocity * delta)
+        # # print(self._position)
+        # self.set_rect()
+
+        self.move_to(self.position + (self._velocity * delta))
 
     def move_to(self, new_pos: Vector2) -> None:
         """FIXME"""

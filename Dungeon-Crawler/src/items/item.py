@@ -182,6 +182,12 @@ class Item(sprite.Sprite):
         self.image.set_colorkey((0, 0, 0))
         return (self.image, self.rect)
 
+    def render_projectiles(self) -> list[tuple[Surface, Rect]]:
+        """
+        Item Projectile render.
+        """
+        return list[tuple[Surface, Rect]]()
+
 # ---- item methods ----
 
     def check_player_touched(self) -> None:
@@ -190,3 +196,6 @@ class Item(sprite.Sprite):
             #  Change state, move it very far off screen.
             self.set_state(self.COLLECTED)
             self._position = Vector2(-999, -999)
+
+    def item_action_a(self, player_pos: Vector2, player_look: tuple[int, int]) -> None:
+        """Base method for items with actions. Does nothing."""

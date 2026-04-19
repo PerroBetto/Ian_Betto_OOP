@@ -124,7 +124,10 @@ class World:
         > Inventory and grounded items should be empty.
         """
         self._items: list[Item] = list[Item]()
-        self._items.append(Item(self, position=pygame.Vector2(800, 0)))
+        self._items = [
+            Item(self, position=pygame.Vector2(800, 0)),
+            Item(self, position=pygame.Vector2(304, 564))
+            ]
         self._item_slot : Item = BubbleWeapon(self)
         self._inventory : list[Item] = list[Item]()
 
@@ -152,6 +155,8 @@ class World:
         if len(self._items):
             for indx, _item in enumerate(self._items):
                 self._items[indx].loop(delta)
+
+        self._item_slot.loop(delta)
 
         # print(self._inventory)
 
@@ -196,6 +201,9 @@ class World:
         if len(self._items):
             for indx, _item in enumerate(self._items):
                 temp.append(self._items[indx].render())
+
+        for proj in self._item_slot.render_projectiles():
+            temp.append(proj)
 
         return temp
 
@@ -274,7 +282,9 @@ class World:
         Args:
             action (str): Action ID passed by player.
         """
-        print(action)
+        if action == "action_a":
+            self._item_slot.item_action_a(
+                self._player.position, self._player.look_dir)
 
     def quit_controller(self) -> None:
         """FIXME"""

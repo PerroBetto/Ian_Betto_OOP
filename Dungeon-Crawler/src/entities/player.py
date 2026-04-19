@@ -66,6 +66,21 @@ class Player(Entity):
         """FIXME"""
         self._controller.quit()
 
+# ---- properties ----
+
+    @property
+    def look_dir(self) -> tuple[int, int]:
+        """
+        Direction player is looking at.
+        """
+        if self._curr_group == 'S':
+            return (0, 1)
+        if self._curr_group == 'E':
+            return (1, 0)
+        if self._curr_group == 'W':
+            return (-1, 0)
+        return (0, -1)
+
 # ---- base methods ----
 
     def loop(self, delta: float, move: Vector2 | None = None) -> None:
