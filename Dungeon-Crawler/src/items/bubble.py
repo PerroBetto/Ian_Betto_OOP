@@ -6,8 +6,10 @@ When the player starts the game, they will only have the bubble.
 
 The weapon produces bubbles. The projectile is the bubble itself.
 """
+from pathlib import Path
 from typing import Any
 
+import pygame
 from pygame import Vector2, Surface, Rect
 
 try:
@@ -86,5 +88,9 @@ class Bubble(Projectile):
 
     def __init__(self, position: Vector2) -> None:
         """Bubble init"""
-        super().__init__(position, speed=600.0, friction=15.0)
+        bubble_path = Path(__file__).parent / \
+            "../../assets/visual/items/bubble_weapon/Bubble_projectile.png"
+        bubble_sheet = pygame.image.load(bubble_path)
+        super().__init__(position, speed=600.0, friction=15.0,
+                         image=self._single_from_sheet(bubble_sheet, (8, 8)))
         self.damage_points = 10

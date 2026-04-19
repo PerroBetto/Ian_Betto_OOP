@@ -2,6 +2,7 @@
 Projectile Module.
 """
 
+import pygame
 from pygame import sprite, Vector2, Surface, Rect
 
 
@@ -13,7 +14,6 @@ class Projectile(sprite.Sprite):
     _SCALE: int = 5
 
     __slots__: list[str] = ["_dmg",  # int
-                            "_assets",  # dict[str, Surface]
                             "_position",  # Vector2
                             "_velocity",  # Vector2
                             "_speed",  # float
@@ -23,7 +23,6 @@ class Projectile(sprite.Sprite):
     def __init__(self, position: Vector2 = Vector2(),
                  speed: float = 100.0,
                  friction: float = 10.0,
-                 assets: dict[str, Surface] | None = None,
                  image: Surface | None = None) -> None:
         """FIXME"""
         super().__init__()
@@ -41,10 +40,6 @@ class Projectile(sprite.Sprite):
         # sound init
         self._sounds: dict[str, int] = dict[str, int]()
         self._sound_init()
-
-        self._assets: dict[str, Surface] = dict[str, Surface]()
-        if assets:
-            self._assets = assets
 
         self.__image_init(image)
 
@@ -155,3 +150,14 @@ class Projectile(sprite.Sprite):
     def push(self, dir: Vector2) -> None:
         """FIXME"""
         self._velocity += Vector2(dir.x * self.speed, dir.y * self.speed)
+
+# ==== get image from file ====
+
+    def _single_from_sheet(self, image: Surface,
+                           dimension: tuple[int, int]) -> Surface:
+        """FIXME"""
+        single: Surface = Surface(dimension).convert_alpha()
+        single.blit(image, (0, 0), (0, 0, dimension[0], dimension[1]))
+        single = pygame.transform.scale(single, (dimension[0] * self._SCALE,
+                                                 dimension[1] * self._SCALE))
+        return single
