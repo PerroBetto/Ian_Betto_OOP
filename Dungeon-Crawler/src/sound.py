@@ -128,7 +128,7 @@ class SoundManager:
         Args:
             new_sounds (list[pygame.mixer.Sound]): List of new sounds that got added
         """
-
+        
         # Next few lines are for music
         Main_theme_sound = self.load_audio("assets/audio/music/Main_Theme.mp3")
         # Next themes to add:
