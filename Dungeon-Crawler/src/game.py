@@ -45,8 +45,11 @@ class Game:
     # --- constants ---
     _FPS: int = 60
     _VOLUME: float = 0.5
+    _RESOLUTION: tuple[int, int] = (1440, 810)
 
-    __slots__ = ["_resolution"  # tuple[int, int]: manage screen resolution
+    __slots__ = ["_debug_mode"   # bool
+                 , "_debug_font"  # pygame.font.SysFont
+                 , "_resolution"  # tuple[int, int]: manage screen resolution
                  , "_screen"  # Screen: Manage display
                  , "_framerate"  # Clock: Manage framerate
                  , "_running"  # boolean: game status
@@ -76,14 +79,26 @@ class Game:
 
         _running = false.
         """
+        # debug mode set to disabled (False)
+        self._debug_mode: bool = False
+        pygame.font.init()
+        self._debug_font: pygame.font.Font = pygame.font.SysFont("consolas", 18)
+
+        # initialize game seed
         self._seed: Any = seed
+
+        # initialize game resolution
         self._resolution: tuple[int, int] = (0, 0)
         if resolution is None:
-            self._resolution = (1440, 810)
+            self._resolution = self._RESOLUTION
         else:
             self._resolution = resolution
+
+        # Initialize game running state
         self._running: bool = False
         self._audio_enabled: bool = False
+
+        # clock for handling framerate
         self._framerate: pygame.time.Clock = pygame.time.Clock()
 
         pygame.mixer.pre_init()  # No changes
@@ -143,8 +158,60 @@ class Game:
             if event.type == locals.QUIT:
                 print("Quitting...")
                 self._running = False
+            elif event.type == locals.KEYDOWN:
+                if event.dict['key'] == locals.K_ESCAPE:
+                    print("Quitting...")
+                    self._running = False
+                if event.dict['key'] == locals.K_F1:
+                    self.switch_debug()
 
-    # --- render module ---
+    # --- debug methods ---
+
+    def switch_debug(self) -> None:
+        """
+        Switch debug states.
+        """
+        self._debug_mode = not self._debug_mode
+        if self._debug_mode:
+            print("Debug enabled.")
+        else:
+            print("Debug disabled.")
+
+    def display_debug(self) -> None:
+        """
+        Display debug to the screen.
+        """
+        debug_data: dict[str, Any] = self._world.data
+
+        debug_log: list[str] = [
+            "Player:",
+            f"  position: {debug_data['player']['position']}",
+            f"  HP: {debug_data['player']['hp']}"
+        ]
+        debug_log.append("Entities:")
+        for entity in debug_data['entities']:
+            debug_log.append(f" {entity['name']}:")
+            debug_log.append(f"     position: {entity['position']}")
+            debug_log.append(f"     HP: {entity['hp']}")
+
+        debug_log.append("Grounded items:")
+        for item in debug_data['items']['grounded']:
+            debug_log.append(f" {item['name']}:")
+            debug_log.append(f"     position: {item['position']}")
+
+        debug_log.append("Inventory Items:")
+        for item in debug_data['items']['inventory']:
+            debug_log.append(f" {item['name']}:")
+
+        debug_log.append("Item Slot:")
+        debug_log.append(f" {debug_data['items']['slot']['name']}")
+
+        # Display to screen
+        for i, line in enumerate(debug_log):
+            text = self._debug_font.render(line, False, (255, 255, 255))
+            self._screen.blit(text, (20, i * 20))
+
+    # --- render method ---
 
     def on_render(self) -> None:
         """
@@ -167,8 +234,13 @@ class Game:
         """
         self._screen.fill("black")
         items = self._world.render()
-        for i, n in enumerate(items):
+        for i, _n in enumerate(items):
             self._screen.blit(items[i][0], items[i][1])
+
+        # check to display debug
+        if self._debug_mode:
+            self.display_debug()
+
         pygame.display.flip()
 
         self.sound_handler()

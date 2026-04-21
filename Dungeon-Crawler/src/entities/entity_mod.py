@@ -34,9 +34,10 @@ class Entity(sprite.Sprite):
     """
 
     _SCALE: int = 5
+    _INV_SEC: float = 0.1
 
     __slots__: list[str] = ["_world"  # Any (World this entity belongs to)
-                            "_assets",  # dict[str, int]
+                            "_assets",  # dict[str, Surface]
                             "_position",  # Vector2
                             "_prev_position",  # Vector2
                             "_velocity",  # Vector2
@@ -46,8 +47,6 @@ class Entity(sprite.Sprite):
                             "_sounds",  # dict[str, int]
                             "_HP",  # int
                             "_invincibility",  # float
-                            "_rect",  # Rect
-                            "_image",  # Surface
                             "_orientation",  # bool
                             "_curr_orient",  # bool
                             "_anim_timer_top",  # float
@@ -89,6 +88,7 @@ class Entity(sprite.Sprite):
         self._velocity: Vector2 = Vector2()
         self._friction: float = friction
         self._sounds: dict[str, int] = dict[str, int]()
+        self._sound_init()
 
         self._assets: dict[str, Surface] = dict[str, Surface]()
         if assets:
@@ -176,17 +176,14 @@ class Entity(sprite.Sprite):
         """
         self.animate(time)
         try:
-            if self.image and isinstance(self.rect, Rect):
-                self.image.set_colorkey((0, 0, 0))
-            else:
-                raise AttributeError()
+            self.image.set_colorkey((0, 0, 0))
         except AttributeError:
             raise
         return (self.image, self.rect)
 
 # ----- entity methods -----
 
-    def move(self, delta: float, dir: Vector2 | None = None) -> None:
+    def move(self, delta: float, dir: Vector2 = Vector2()) -> None:
         """
         Movement for an Entity object.
 
@@ -195,10 +192,6 @@ class Entity(sprite.Sprite):
         Args:
             dir (Vector2 | None, optional): Direction of acceleration.
         """
-        # add direction
-        if not dir:
-            dir = Vector2()
-
         self._velocity += Vector2(dir.x * self.speed, dir.y * self.speed)
 
         # handle x
@@ -226,9 +219,11 @@ class Entity(sprite.Sprite):
         except ValueError:
             pass
 
-        self._position += (self._velocity * delta)
-        # print(self._position)
-        self.set_rect()
+        # self._position += (self._velocity * delta)
+        # # print(self._position)
+        # self.set_rect()
+
+        self.move_to(self.position + (self._velocity * delta))
 
     def move_to(self, new_pos: Vector2) -> None:
         """FIXME"""
@@ -248,8 +243,6 @@ class Entity(sprite.Sprite):
     def static_rect_collide(self, rect: Rect) -> None:
         """FIXME"""
 
-        if not isinstance(self.rect, Rect):
-            raise AttributeError("rect must be of type Rect")
         # above rect
         relative_x: int = 0
         relative_y: int = 0
@@ -283,7 +276,7 @@ class Entity(sprite.Sprite):
         """Take damage"""
         if self._invincibility <= 0:
             self.HP -= dmg
-            self._invincibility = 1
+            self._invincibility = self._INV_SEC
 
     def play_sound(self, sound_key: str) -> None:
         """FIXME"""
@@ -354,6 +347,3 @@ class Entity(sprite.Sprite):
         """
 
 # ---- overloads ----
-
-    def __str__(self) -> str:
-        return "Entity"

@@ -7,7 +7,7 @@ player instance and utilize its actions.
 
 """
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 from math import sin
 
 try:
@@ -33,6 +33,8 @@ class Player(Entity):
     A player is an entity that is controlled by the game user.
     """
 
+    _INV_SEC = 1
+
     __slots__: list[str] = ["_controller",   # PlayerController
                             "_action_a_cooldown",  # float // measured in seconds
                             "_action_b_cooldown",  # float // measured in seconds
@@ -41,7 +43,7 @@ class Player(Entity):
 
     def __init__(self, world: Any,
                  position: Vector2 = Vector2(),
-                 HP: int = 100) -> None:
+                 HP: int = 10) -> None:
         """
         Player Fish controlled by the user.
 
@@ -71,6 +73,21 @@ class Player(Entity):
     def quit_controller(self) -> None:
         """FIXME"""
         self._controller.quit()
+
+# ---- properties ----
+
+    @property
+    def look_dir(self) -> tuple[int, int]:
+        """
+        Direction player is looking at.
+        """
+        if self._curr_group == 'S':
+            return (0, 1)
+        if self._curr_group == 'E':
+            return (1, 0)
+        if self._curr_group == 'W':
+            return (-1, 0)
+        return (0, -1)
 
 # ---- base methods ----
 
