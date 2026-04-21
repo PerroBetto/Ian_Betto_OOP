@@ -131,12 +131,17 @@ class SoundManager:
         PROJECT_ROOT = Path(__file__).resolve().parents[1]
         MUSIC_DIR = PROJECT_ROOT / "assets" / "audio" / "music"
 
+        Main_theme_dir = (MUSIC_DIR / "Main_Theme.mp3")
+        Boss_theme_dir = (MUSIC_DIR / "Boss_Theme.mp3")
+        # Puzzle_theme_dir = (MUSIC_DIR / "Puzzle_Theme.mp3")
+        Enemy_theme_dir = (MUSIC_DIR / "Enemy_Theme.mp3")
+
         # Next few lines are for music
-        Main_theme_sound = self.load_audio(MUSIC_DIR / "Main_Theme.mp3")
+        Main_theme_sound = self.load_audio(Main_theme_dir)
         # Next themes to add:
-        Boss_theme_sound = self.load_audio(MUSIC_DIR / "Boss_Theme.mp3")
-        # Puzzle_theme_sound = self.load_audio(MUSIC_DIR / "Puzzle_Theme.mp3")
-        Enemy_theme_sound = self.load_audio(MUSIC_DIR / "Enemy_Theme.mp3")
+        Boss_theme_sound = self.load_audio(Boss_theme_dir)
+        # Puzzle_theme_sound = self.load_audio(Puzzle_theme_dir)
+        Enemy_theme_sound = self.load_audio(Enemy_theme_dir)
 
         Main_theme_channel = pygame.mixer.Channel(9)
         # Future channels needed:
