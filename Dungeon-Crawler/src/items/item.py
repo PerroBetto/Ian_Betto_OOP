@@ -8,6 +8,7 @@ and can even serve as weapons for player use.
 This base module doesn't have any base functionality for items, it is
 a stepping stone for other items to be created.
 """
+from pathlib import Path
 from typing import Any
 
 # import pygame
@@ -33,6 +34,7 @@ class Item(sprite.Sprite):
     """
 
     _SCALE: int = 5
+    ICON: Path = Path()  # placeholder for item slot items
 
 # ---- State Values ----
     GROUNDED: int = 0
@@ -103,6 +105,11 @@ class Item(sprite.Sprite):
     def set_rect(self) -> None:
         """Set rect value to position"""
         self.rect.center = (int(self._position.x), int(self._position.y))
+
+    @property
+    def name(self) -> str:
+        """Name of this item"""
+        return ""
 
     @property
     def position(self) -> Vector2:
@@ -182,6 +189,12 @@ class Item(sprite.Sprite):
         self.image.set_colorkey((0, 0, 0))
         return (self.image, self.rect)
 
+    def render_projectiles(self) -> list[tuple[Surface, Rect]]:
+        """
+        Item Projectile render.
+        """
+        return list[tuple[Surface, Rect]]()
+
 # ---- item methods ----
 
     def check_player_touched(self) -> None:
@@ -190,3 +203,6 @@ class Item(sprite.Sprite):
             #  Change state, move it very far off screen.
             self.set_state(self.COLLECTED)
             self._position = Vector2(-999, -999)
+
+    def item_action_a(self, player_pos: Vector2, player_look: tuple[int, int]) -> None:
+        """Base method for items with actions. Does nothing."""
