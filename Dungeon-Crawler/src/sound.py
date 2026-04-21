@@ -1,17 +1,20 @@
 import sys
 import os
 from unittest import case
-from zipfile import Path
+from pathlib import Path
 import pygame
 from pygame import locals
 
 class SoundManager:
+    
+    PROJECT_ROOT = Path(__file__).parent / ".."
+
     def __init__(self):
         self._music: str = ""
         self._sounds: list[pygame.mixer.Sound] = []
         pygame.mixer.set_num_channels(16)
-        self.load_music()
         self.load_sound_effect()
+        self.load_music()
 
     @property
     def music(self) -> str:
@@ -128,13 +131,13 @@ class SoundManager:
         Args:
             new_sounds (list[pygame.mixer.Sound]): List of new sounds that got added
         """
-        PROJECT_ROOT = Path(__file__).resolve().parents[1]
-        MUSIC_DIR = PROJECT_ROOT / "assets" / "audio" / "music"
 
-        Main_theme_dir = (MUSIC_DIR / "Main_Theme.mp3")
-        Boss_theme_dir = (MUSIC_DIR / "Boss_Theme.mp3")
+        MUSIC_DIR = self.PROJECT_ROOT / "assets" / "audio" / "music"
+
+        Main_theme_dir = (MUSIC_DIR / "Main_theme.mp3")
+        Boss_theme_dir = (MUSIC_DIR / "Boss_theme.mp3")
         # Puzzle_theme_dir = (MUSIC_DIR / "Puzzle_Theme.mp3")
-        Enemy_theme_dir = (MUSIC_DIR / "Enemy_Theme.mp3")
+        Enemy_theme_dir = (MUSIC_DIR / "Enemy_theme.mp3")
 
         # Next few lines are for music
         Main_theme_sound = self.load_audio(Main_theme_dir)
@@ -160,15 +163,17 @@ class SoundManager:
             new_sound (pygame.mixer.Sound): The new sound effect to add.
         """
 
-        Chest_pick_sound = self.load_audio("assets/audio/sound/Chest_pick.wav")
-        Death_sound = self.load_audio("assets/audio/sound/Death.wav")
-        Explosion_sound = self.load_audio("assets/audio/sound/Explosion.wav")
-        Flame_sound = self.load_audio("assets/audio/sound/Flame.wav")
-        Fuze_sound = self.load_audio("assets/audio/sound/Fuze.wav")
-        Healing_sound = self.load_audio("assets/audio/sound/Healing.wav")
-        NPChurt_sound = self.load_audio("assets/audio/sound/NPChurt.wav")
-        PChurt_sound = self.load_audio("assets/audio/sound/PChurt.wav")
-        Swordmiss_sound = self.load_audio("assets/audio/sound/Swordmiss.wav")
+        SOUND_DIR = self.PROJECT_ROOT / "assets" / "audio" / "sound"
+
+        Chest_pick_sound = self.load_audio(SOUND_DIR / "Chest_pick.wav")
+        Death_sound = self.load_audio(SOUND_DIR / "Death.wav")
+        Explosion_sound = self.load_audio(SOUND_DIR / "Explosion.wav")
+        Flame_sound = self.load_audio(SOUND_DIR / "Flame.wav")
+        Fuze_sound = self.load_audio(SOUND_DIR / "Fuze.wav")
+        Healing_sound = self.load_audio(SOUND_DIR / "Healing.wav")
+        NPChurt_sound = self.load_audio(SOUND_DIR / "NPChurt.wav")
+        PChurt_sound = self.load_audio(SOUND_DIR / "PChurt.wav")
+        Swordmiss_sound = self.load_audio(SOUND_DIR / "Swordmiss.wav")
         
         Chest_pick_channel = pygame.mixer.Channel(0)
         Death_channel = pygame.mixer.Channel(1)

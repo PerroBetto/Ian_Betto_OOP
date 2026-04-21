@@ -179,6 +179,7 @@ class Game:
 
         debug_log.append("Item Slot:")
         debug_log.append(f" {debug_data['items']['slot']['name']}")
+        debug_log.append(f"FRAMERATE: {self._framerate.get_fps()}")
 
         # Display to screen
         for i, line in enumerate(debug_log):

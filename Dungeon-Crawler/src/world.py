@@ -45,6 +45,7 @@ class World:
     __slots__ = ["_sound_manager"  # : SoundManager
                  , "_time"  # : float
                  , "_sounds"  # : list[int] // int representation of sound
+                 , "_prev_music"  # : list[int] // int representation of music
                  , "_entities"  # : list[Entity]
                  , "_player"  # : Player
                  , "_items"  # Item // items in the room
@@ -82,7 +83,8 @@ class World:
 
         # inialize sounds
         self._sound_manager: SoundManager = SoundManager()
-        self.prev_music: list[int] = [9]
+        self._prev_music: list[int] = [9]
+        self._sound_manager.play_audio(9)
 
     def _dungeon_init(self, seed: Any) -> None:
         """
@@ -216,7 +218,7 @@ class World:
         for elem in self._ui.render():
             temp.append(elem)
 
-        self.play_world_music()
+        # self.play_world_music()
 
         return temp
 
