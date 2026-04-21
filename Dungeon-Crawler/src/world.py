@@ -163,8 +163,8 @@ class World:
 
         # print(self._inventory)
 
-        self.update_room
-        self.update_ui
+        self.update_room()
+        self.update_ui()
         # print("world-loop")
 
 # --- render method ---
@@ -258,22 +258,9 @@ class World:
 
         > key and bomb count, etc.
         """
-        pass
+        self._ui.update_hearts(self._player.HP)
 
 # --- entity methods ---
-
-    # def get_collide(self, entity: Entity) -> bool:  # FIXME
-    #     """
-    #     Detects the collision of the passed entity in relation to all collidables.
-    #     > Collidables include walls, doors, pits, and other entities.
-
-    #     Args:
-    #         entity (Entity): Entity passing itself to check their own collision
-
-    #     Returns:
-    #         bool: True if collided, False if not
-    #     """
-    #     return bool()
 
     def player_action(self, action: str) -> None:
         """
@@ -327,8 +314,8 @@ class World:
         elif action == "player_col":
             if pygame.sprite.collide_rect(entity, self._player):
                 return self._player.rect
-        elif action == "player_dmg_10":
-            self._player.damage(10)
+        elif action == "player_dmg_1":
+            self._player.damage(1)
 
         return 0
 

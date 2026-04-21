@@ -26,7 +26,7 @@ class Jelly(Entity):
                  speed: float = 300,
                  clamp_speed: float = 300,
                  friction: float = 5,
-                 HP: int = 30,
+                 HP: int = 3,
                  assets: dict[str, Surface] | None = None,
                  image: Surface | None = None,
                  anim_timer: float = 100) -> None:
@@ -97,4 +97,4 @@ class Jelly(Entity):
 
     def jelly_attack(self) -> None:
         if self._world.entity_action(self, "player_col"):
-            self._world.entity_action(self, "player_dmg_10")
+            self._world.entity_action(self, "player_dmg_1")

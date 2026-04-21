@@ -37,7 +37,7 @@ class Player(Entity):
 
     def __init__(self, world: Any,
                  position: Vector2 = Vector2(),
-                 HP: int = 100) -> None:
+                 HP: int = 10) -> None:
         """
         Player Fish controlled by the user.
 

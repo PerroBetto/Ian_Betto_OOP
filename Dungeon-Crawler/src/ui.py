@@ -4,6 +4,7 @@ UI Module
 > Displays game data in an inuitive format for the player.
 """
 from pathlib import Path
+from typing import Any
 
 import pygame
 from pygame import Surface, Rect
@@ -21,7 +22,7 @@ class UI:
     _RESOLUTION: tuple[int, int] = (1440, 810)
     _SCALE: int = 5
     __slots__ = ["_assets",  # dict[str, Surface]
-                 "_hearts"]  # list[tuple[Surface, Rect]]
+                 "_hearts"]  # list[list[Any]]
 
 # ==== inits ====
 
@@ -48,11 +49,11 @@ class UI:
         self._store_ui_element('hearts_0', heart_sheet, (32, 0), (16, 16))
 
         # Set hearts for display
-        self._hearts: list[tuple[Surface, Rect]] = []
+        self._hearts: list[list[Any]] = []
         for i in range(5):
             heart_rect: Rect = self._assets['hearts_2'].get_rect()
             heart_rect.topleft = (0, (i*16*self._SCALE))
-            self._hearts.append((self._assets['hearts_2'], heart_rect))
+            self._hearts.append([self._assets['hearts_2'], heart_rect])
 
 # ==== base ====
 
@@ -66,11 +67,19 @@ class UI:
 
         # append hearts to the display
         for heart in self._hearts:
-            temp.append(heart)
+            temp.append((heart[0], heart[1]))
 
         return temp
 
 # ==== UI methods ====
+
+    def update_hearts(self, hp: int) -> None:
+        """Update heart UI according to player health."""
+        for indx, heart in enumerate(self._hearts):
+            rel_hp: int = hp - (indx*2)
+            if rel_hp > 2 or rel_hp < 0:
+                continue
+            heart[0] = self._assets[f'hearts_{rel_hp}']
 
 # ==== get image from file ====
 
@@ -80,7 +89,7 @@ class UI:
                           dimension: tuple[int, int]) -> None:
         """FIXME"""
         single: Surface = Surface(dimension).convert_alpha()
-        single.blit(image, (position[0], position[1]), (0, 0, dimension[0], dimension[1]))
+        single.blit(image, (0, 0), (position[0], position[1], dimension[0], dimension[1]))
         single = pygame.transform.scale(single, (dimension[0] * self._SCALE,
                                                  dimension[1] * self._SCALE))
         single.set_colorkey((0, 0, 0))

@@ -92,5 +92,5 @@ class Bubble(Projectile):
         bubble_path = Path(__file__).parent / \
             "../../assets/visual/items/bubble_weapon/Bubble_projectile.png"
         bubble_sheet = pygame.image.load(bubble_path)
-        super().__init__(position, speed=600.0, friction=15.0, damage=10,
+        super().__init__(position, speed=600.0, friction=15.0, damage=1,
                          image=self._single_from_sheet(bubble_sheet, (15, 15)))
