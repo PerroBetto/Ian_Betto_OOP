@@ -8,6 +8,7 @@ and can even serve as weapons for player use.
 This base module doesn't have any base functionality for items, it is
 a stepping stone for other items to be created.
 """
+from pathlib import Path
 from typing import Any
 
 # import pygame
@@ -33,6 +34,7 @@ class Item(sprite.Sprite):
     """
 
     _SCALE: int = 5
+    ICON: Path = Path()  # placeholder for item slot items
 
 # ---- State Values ----
     GROUNDED: int = 0

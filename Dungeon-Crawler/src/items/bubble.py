@@ -30,6 +30,9 @@ class BubbleWeapon(Item):
     If there are no collisions with entities, slows down and pops on its own.
     """
 
+    ICON: Path = Path(__file__).parent / \
+        "../../assets/visual/items/bubble_weapon/icon.png"
+
     __slots__ = ["_bubbles"]  # list(Bubble)
 
     def __init__(self, world: Any,
