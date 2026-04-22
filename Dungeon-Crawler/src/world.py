@@ -26,7 +26,7 @@ from entities.jelly import Jelly
 from entities.player import Player
 from items.item import Item
 from sound import SoundManager
-from structures import Dungeon
+from structures import Dungeon, Room
 from items.projectile import Projectile
 from items.bubble import BubbleWeapon
 from ui import UI
@@ -46,6 +46,7 @@ class World:
                  , "_time"  # : float
                  , "_sounds"  # : list[int] // int representation of sound
                  , "_prev_music"  # : list[int] // int representation of music
+                 , "_Music_IDs"  # : dict[str, int] // string representation of music to int representation
                  , "_entities"  # : list[Entity]
                  , "_player"  # : Player
                  , "_items"  # Item // items in the room
@@ -85,7 +86,13 @@ class World:
         self._sounds: list[int] = list[int]()
         self._sound_manager: SoundManager = SoundManager()
         self._prev_music: list[int] = [9]
-        self._sound_manager.play_audio(9)
+
+        self._Music_IDs = {
+            "start": 9,
+            "boss": 10,
+            "puzzle": 11,
+            "enemy": 12
+        }
 
     def _dungeon_init(self, seed: Any) -> None:
         """
@@ -96,8 +103,8 @@ class World:
             seed (Any): Dungeon seed
         """
         self._dungeon_seed: Any = seed
-        # self._dungeon: Dungeon = Dungeon(self._dungeon_seed)
-        # self._curr_room: Room = Room(0, 0)
+        self._dungeon: Dungeon = Dungeon(self._dungeon_seed)
+        self._curr_room: Room = Room(0, 0)
 
     def _entity_init(self) -> None:
         """
@@ -215,7 +222,7 @@ class World:
         for elem in self._ui.render():
             temp.append(elem)
 
-        # self.play_world_music()
+        self.play_world_music()
         self.play_sound_effects()
         return temp
 
@@ -238,8 +245,25 @@ class World:
 
         > Example: Enemy -> Puzzle
         """
-        self._sound_manager.play_audio(9)  # Main_theme
 
+        if self._curr_room.room_type == "start" and self._prev_music[self._Music_IDs["start"]] != self._Music_IDs["start"]:
+            self._sound_manager.stop_audio(self._prev_music.pop())
+            self._sound_manager.play_audio(self._Music_IDs["start"])  # Main_theme
+            self._prev_music.append(self._Music_IDs["start"])
+        elif self._curr_room.room_type == "enemy" and self._prev_music[self._Music_IDs["enemy"]] != self._Music_IDs["enemy"]:
+            self._sound_manager.stop_audio(self._prev_music.pop())
+            self._sound_manager.play_audio(self._Music_IDs["enemy"])  # Enemy_theme
+            self._prev_music.append(self._Music_IDs["enemy"])
+        elif self._curr_room.room_type == "puzzle" and self._prev_music[self._Music_IDs["puzzle"]] != self._Music_IDs["puzzle"]:
+            self._sound_manager.stop_audio(self._prev_music.pop())
+            self._sound_manager.play_audio(self._Music_IDs["puzzle"])  # Puzzle_theme
+            self._prev_music.append(self._Music_IDs["puzzle"])
+        elif self._curr_room.room_type == "boss" and self._prev_music[self._Music_IDs["boss"]] != self._Music_IDs["boss"]:
+            self._sound_manager.stop_audio(self._prev_music.pop())
+            self._sound_manager.play_audio(self._Music_IDs["boss"])  # Boss_theme
+            self._prev_music.append(self._Music_IDs["boss"])
+        else:
+            print(f"Error: Room type {self._curr_room.room_type} did not have its music assigned correctly. Congrats Ian, you broke the game!")
 
         # if _curr_room.room_type == "start" && self.prev_music[0] != 9:
             
