@@ -277,7 +277,8 @@ class World:
 
         > door unlocks, etc.
         """
-        pass
+        if self._curr_room.room_type != self._prev_room_type:
+            
 
 # --- UI methods ---
 
