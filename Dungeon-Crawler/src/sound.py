@@ -121,7 +121,7 @@ class SoundManager:
             # case 11:
             #     pygame.mixer.Channel(11).play(self._sounds[11], -1, fade_ms = fade_in)  # Puzzle_theme
             case 12:
-                pygame.mixer.Channel(12).play(self._sounds[12], -1, fade_ms = fade_in)  # Enemy_theme
+                pygame.mixer.Channel(12).play(self._sounds[11], -1, fade_ms = fade_in)  # Enemy_theme
             case _:
                 print(f"Error: Sound index {sound_index} is out of range.")
 

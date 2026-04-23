@@ -48,6 +48,7 @@ class World:
                  , "_sounds"  # : list[int] // int representation of sound
                  , "_prev_music"  # : list[int] // int representation of music
                  , "_Music_IDs"  # : dict[str, int] // string representation of music to int representation
+                 , "_prev_room_type"
                  , "_entities"  # : list[Entity]
                  , "_player"  # : Player
                  , "_items"  # Item // items in the room
@@ -81,6 +82,7 @@ class World:
         # initialize dungeon
         self._dungeon_init(seed)
         self._curr_room: Room = self._dungeon.rooms[(0, 0)]
+        self._prev_room_type: str = "none"
         self._time: float = float()
 
         # inialize sounds
@@ -232,7 +234,8 @@ class World:
     def play_sound_effects(self) -> None:
         """
         Plays all sound effects in the queue.
-        > Should be called in the render method, after all objects have had a chance to queue sounds.
+        > Should be called in the render method, after all objects
+        have had a chance to queue sounds.
 
         > After playing, the sound queue should be cleared.
         """
@@ -247,24 +250,11 @@ class World:
         > Example: Enemy -> Puzzle
         """
 
-        if self._curr_room.room_type == "start" and self._prev_music[self._Music_IDs["start"]] != self._Music_IDs["start"]:
+        if self._curr_room.room_type != self._prev_room_type:
             self._sound_manager.stop_audio(self._prev_music.pop())
-            self._sound_manager.play_audio(self._Music_IDs["start"])  # Main_theme
-            self._prev_music.append(self._Music_IDs["start"])
-        elif self._curr_room.room_type == "enemy" and self._prev_music[self._Music_IDs["enemy"]] != self._Music_IDs["enemy"]:
-            self._sound_manager.stop_audio(self._prev_music.pop())
-            self._sound_manager.play_audio(self._Music_IDs["enemy"])  # Enemy_theme
-            self._prev_music.append(self._Music_IDs["enemy"])
-        elif self._curr_room.room_type == "puzzle" and self._prev_music[self._Music_IDs["puzzle"]] != self._Music_IDs["puzzle"]:
-            self._sound_manager.stop_audio(self._prev_music.pop())
-            self._sound_manager.play_audio(self._Music_IDs["puzzle"])  # Puzzle_theme
-            self._prev_music.append(self._Music_IDs["puzzle"])
-        elif self._curr_room.room_type == "boss" and self._prev_music[self._Music_IDs["boss"]] != self._Music_IDs["boss"]:
-            self._sound_manager.stop_audio(self._prev_music.pop())
-            self._sound_manager.play_audio(self._Music_IDs["boss"])  # Boss_theme
-            self._prev_music.append(self._Music_IDs["boss"])
-        else:
-            print(f"Error: Room type {self._curr_room.room_type} did not have its music assigned correctly. Congrats Ian, you broke the game!")
+            self._sound_manager.play_audio(self._Music_IDs[self._curr_room.room_type])  # Main_theme
+            self._prev_music.append(self._Music_IDs[self._curr_room.room_type])
+            self._prev_room_type = self._curr_room.room_type
 
     def queue_sound(self, sound: int) -> None:
         """
