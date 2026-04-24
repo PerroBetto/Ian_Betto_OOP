@@ -1,37 +1,35 @@
 import random
 from collections import deque
+from typing import Any, Self
 
 import pygame
-from pygame import locals
-
-try:
-    from .entities.entity_mod import Entity
-except ImportError:
-    from entities.entity_mod import Entity
 
 try:
     from .generation import Generation
 except ImportError:
     from generation import Generation
 
+
 class Room:
     """
     Room class for handling cords, used by Dungeon class
     """
-    def __init__(self, x, y, room_type="empty"):
-        self.x = x
-        self.y = y
-        self.room_type = room_type
-        self.connections = []
+    def __init__(self, x: int, y: int, room_type: str = "empty") -> None:
+        # what value types are these
+        self.x: int = x
+        self.y: int = y
+        self.room_type: str = room_type
+        self.connections: list[Self] = []
 
-    def connect(self, other_room):
+    # what is other-room
+    def connect(self, other_room: Self) -> None:
         """Creates a bidirectional connection."""
         if other_room not in self.connections:
             self.connections.append(other_room)
         if self not in other_room.connections:
             other_room.connections.append(self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Room({self.x}, {self.y}, {self.room_type})"
 
 
@@ -39,31 +37,50 @@ class Dungeon:
     """
     Dungeon class to create a dungeon, requires Room class
     """
-    def __init__(self, seed, total_rooms=12, min_puzzle_rooms=4):
-        self.seed = seed
-        self.total_rooms = total_rooms
-        self.min_puzzle_rooms = min_puzzle_rooms
-        self.native_size = (256, 160)
-        self.render_scale = Entity._SCALE
-        self.rooms = {}  # {(x, y): Room}
-        self.rng = random.Random(seed)  # Independent RNG
-        
-        self.generate()
-        self.generation = Generation(self)
-        self.generation.Apply_textures()
-        self.base_resolution: tuple[int, int] = (1440, 810)
-        self.res: tuple[int, int] = self.base_resolution
 
-    def generate(self):  # Call this function to generate dungeon
+    _SCALE: int = 5
+    _RESOLUTION: tuple[int, int] = (1440, 810)
+
+    __slots__ = ["_seed",  # Any
+                 "_total_rooms",  # int
+                 "_min_puzzle_rooms",  # int
+                 "_native_size",  # tuple[int, int]
+                 "_rooms",  # dict[tuple[int, int], Room]
+                 "_rng",  # random.Random
+                 "_generation"]  # Generation
+
+    def __init__(self, seed: Any,
+                 total_rooms: int = 12,
+                 min_puzzle_rooms: int = 4) -> None:
+        self._seed: Any = seed
+        self._total_rooms: int = total_rooms
+        self._min_puzzle_rooms: int = min_puzzle_rooms
+        self._native_size: tuple[int, int] = (256, 160)
+        self._rooms: dict[tuple[int, int], Room] = {}  # {(x, y): Room}
+        self._rng: random.Random = random.Random(seed)  # Independent RNG
+
+        # generate structure?
+        self.generate()
+        self._generation: Generation = Generation(self)
+        self._generation.Apply_textures()
+
+# ==== properties ====
+
+    @property
+    def rooms(self) -> dict[tuple[int, int], Room]:
+        """The rooms held within dungeon."""
+        return self._rooms
+
+    def generate(self) -> None:  # Call this function to generate dungeon
         """
         Creates a dungeon
         """
         self._generate_layout()
         self._assign_room_types()
 
-    def _generate_layout(self):
+    def _generate_layout(self) -> None:
         """
-        Generates the layout for dungeon 
+        Generates the layout for dungeon
         """
         start = Room(0, 0, "start")
         self.rooms[(0, 0)] = start
@@ -71,9 +88,9 @@ class Dungeon:
 
         directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
-        while len(self.rooms) < self.total_rooms:
-            current = self.rng.choice(active_rooms)
-            dx, dy = self.rng.choice(directions)
+        while len(self.rooms) < self._total_rooms:
+            current = self._rng.choice(active_rooms)
+            dx, dy = self._rng.choice(directions)
 
             new_x = current.x + dx
             new_y = current.y + dy
@@ -84,7 +101,7 @@ class Dungeon:
                 current.connect(new_room)
                 active_rooms.append(new_room)
 
-    def _find_farthest_room(self, start):
+    def _find_farthest_room(self, start: Room) -> Room:
 
         """
         Finding the farthest room for setting the dungeon room to the farthest room away.
@@ -94,9 +111,9 @@ class Dungeon:
         Returns:
             Room: The farthest room from the starting room.
         """
-        visited = set()
-        queue = deque([(start, 0)])
-        farthest = (start, 0)
+        visited: set = set()  # no duplicate items
+        queue: deque = deque([(start, 0)])
+        farthest: tuple[Room, int] = (start, 0)
 
         while queue:
             room, dist = queue.popleft()
@@ -111,7 +128,7 @@ class Dungeon:
 
         return farthest[0]
 
-    def _assign_room_types(self):
+    def _assign_room_types(self) -> None:
         """
         Assigns room types to the active rooms list, required to be called after _generate_layout()
         """
@@ -129,9 +146,9 @@ class Dungeon:
         ]
 
         # Assign puzzle rooms
-        puzzle_rooms = self.rng.sample(
+        puzzle_rooms = self._rng.sample(
             remaining,
-            min(self.min_puzzle_rooms, len(remaining))
+            min(self._min_puzzle_rooms, len(remaining))
         )
 
         for room in puzzle_rooms:
@@ -141,14 +158,16 @@ class Dungeon:
         for room in remaining:
             if room.room_type == "empty":
                 room.room_type = "enemy"
-    
+
     def wall_hitbox(self, room: Room, orientation: str) -> list[pygame.Rect]:
         """
-        Checks if the wall selected (depending on orientation) 
-        has a door and is open, returning two types of hitboxes for that wall for 3 different scenarios:
+        Checks if the wall selected (depending on orientation)
+        has a door and is open, returning two types of hitboxes for
+        that wall for 3 different scenarios:
         1) Door = true, state = closed -> fully blocked wall
         2) Door = false -> fully blocked wall
-        3) Door = true, state = open -> two walls on either side with a collider in the middle 
+        3) Door = true, state = open -> two walls on either side with a
+                                        collider in the middle
                                         to allow player into next room
 
         args:
@@ -157,13 +176,14 @@ class Dungeon:
         returns:
             list[pygame.Rect]
         """
-        wall_data = self.generation.room_walls.get((room.x, room.y, orientation))
+        wall_data = self._generation.room_walls.get((room.x, room.y, orientation))
         if wall_data is None:
             # Refresh once in case generation data is stale.
-            self.generation.Apply_textures()
-            wall_data = self.generation.room_walls.get((room.x, room.y, orientation))
+            self._generation.Apply_textures()
+            wall_data = self._generation.room_walls.get((room.x, room.y, orientation))
         if wall_data is None:
-            raise ValueError(f"No wall data for room ({room.x}, {room.y}) orientation {orientation}")
+            raise ValueError(
+                f"No wall data for room ({room.x}, {room.y}) orientation {orientation}")
 
         hasdoor = wall_data["hasdoor"]
         isopen = wall_data["isopen"]
