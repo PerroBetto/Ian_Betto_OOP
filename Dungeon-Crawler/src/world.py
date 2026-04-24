@@ -23,6 +23,7 @@ import pygame
 # from sound import SoundManager
 from entities.entity_mod import Entity
 from entities.jelly import Jelly
+from entities.urchin import Urchin
 from entities.player import Player
 from items.item import Item
 from items.projectile import Projectile
@@ -104,6 +105,7 @@ class World:
         self._entities: list[Entity] = list[Entity]()
         self._entities.append(Jelly(self, position=pygame.Vector2(600, 255)))
         self._entities.append(Jelly(self, position=pygame.Vector2(300, 755)))
+        self._entities.append(Urchin(self, position=pygame.Vector2(800, 300)))
         self._player: Player = Player(self, position=pygame.Vector2(400, 255))
 
     def _ui_init(self) -> None:  # FIXME
@@ -293,7 +295,10 @@ class World:
 
         requests:
         * s_col: Static collision
-        * get_player: get player position
+        * player_pos: get player position
+        * player_col: check this for collision with player
+        * player_dmg_1: damage the player by one point
+        * player_dmg_2: damage the player by two points
 
         Args:
             entity (Entity): Entity calling the function.
@@ -316,6 +321,8 @@ class World:
                 return self._player.rect
         elif action == "player_dmg_1":
             self._player.damage(1)
+        elif action == "player_dmg_2":
+            self._player.damage(2)
 
         return 0
 

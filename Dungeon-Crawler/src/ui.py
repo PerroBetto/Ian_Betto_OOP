@@ -83,7 +83,10 @@ class UI:
         """Update heart UI according to player health."""
         for indx, heart in enumerate(self._hearts):
             rel_hp: int = hp - (indx*2)
-            if rel_hp > 2 or rel_hp < 0:
+            if rel_hp > 2:
+                continue
+            elif rel_hp < 0:
+                heart[0] = self._assets['hearts_0']
                 continue
             heart[0] = self._assets[f'hearts_{rel_hp}']
 

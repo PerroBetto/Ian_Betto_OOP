@@ -18,15 +18,111 @@ class Urchin(Entity):
 
     _MOVE_INTERVAL: float = 1
 
-    __slots__: list[str] = []
+    __slots__: list[str] = ["_move_timer",  # float
+                            "_target_pos",  # list[float]
+                            "_directions"]  # list[tuple(int, int)]
 
 # ==== inits ====
 
     def __init__(self, world: Any,
                  position: Vector2 = Vector2(),
-                 speed: float = 100,
-                 clamp_speed: float = 300,
-                 friction: float = 25,
+                 speed: float = 200,
+                 clamp_speed: float = 500,
+                 friction: float = 50,
                  HP: int = 5) -> None:
         """Urchins are enemies that move in a single direction at a time."""
-        super().__init__(world, position, speed, clamp_speed, friction, HP)
+        # intialize variables
+        self._move_timer: float = self._MOVE_INTERVAL
+        self._target_pos: list[float] = []
+        self._directions: list[tuple[int, int]] = []
+        # Get urchin asset
+        urchin_sprite_sheet: Path = Path(__file__).parent / \
+            "../../assets/visual/sprites/urchin/urchin.png"
+        urchin_sprite: Surface = self._single_surface_from_sheet(
+            pygame.image.load(urchin_sprite_sheet), (0, 0), (32, 32))
+
+        super().__init__(world, position, speed, clamp_speed, friction, HP, image=urchin_sprite)
+
+# ==== base methods ====
+
+    def loop(self, delta: float, move: Vector2 | None = None) -> None:
+        self.urchin_attack()
+        return super().loop(delta, self.urchin_move(delta))
+
+    def render(self, time: float) -> tuple[Surface, Rect]:
+        if self._invincibility > 0:
+            self.image.set_alpha(int(abs(sin(time * 10) * 255)))
+        else:
+            self.image.set_alpha(255)
+        return super().render(time)
+
+# ==== urchin methods ====
+
+    def urchin_move(self, delta: float) -> Vector2:
+        """
+        1. Check if currently moving (timer is less than or equal to 0).
+            * true: continue moving
+        2. If not moving, get the player position.
+        Get difference, determine the smaller value (x or y).
+        Depending on that value, set direction to be a cardinal direction.
+        Set target position.
+        """
+        # check if we are moving
+        if len(self._directions):
+            if self._directions[0][0] == 0:
+                # check if we have passed the target in the y direction
+                if self.__check_y_target():
+                    self._directions.pop(0)
+                    self._target_pos.pop(0)
+                    self._move_timer = self._MOVE_INTERVAL
+            elif self._directions[0][1] == 0:
+                # check if we have passed the target in the x direction
+                if self.__check_x_target():
+                    self._directions.pop(0)
+                    self._target_pos.pop(0)
+                    self._move_timer = self._MOVE_INTERVAL
+
+        if len(self._directions) and self._move_timer <= 0:
+            return Vector2(self._directions[0][0], self._directions[0][1])
+
+        # Not moving:
+        # decrement timer
+        self._move_timer -= delta
+
+        # When the timer runs out, set direction and target
+        if self._move_timer <= 0 and not len(self._directions):
+            player: Vector2 = self._world.entity_action(self, "player_pos")
+            diff: Vector2 = Vector2(player.x - self._position.x, player.y - self._position.y)
+            abs_diff: tuple[float, float] = (abs(diff.x), abs(diff.y))
+
+            # Set diff and targets
+            if abs_diff[0] < abs_diff[1]:
+                self._directions.append((int(diff.x / abs(diff.x)), 0))
+                self._directions.append((0, int(diff.y / abs(diff.y))))
+                self._target_pos.append(player.x)
+                self._target_pos.append(player.y)
+            else:
+                self._directions.append((0, int(diff.y / abs(diff.y))))
+                self._directions.append((int(diff.x / abs(diff.x)), 0))
+                self._target_pos.append(player.y)
+                self._target_pos.append(player.x)
+
+        return Vector2()
+
+    def urchin_attack(self) -> None:
+        if self._world.entity_action(self, "player_col"):
+            self._world.entity_action(self, "player_dmg_2")
+
+    def __check_y_target(self) -> bool:
+        if self._directions[0][1] > 0:
+            return True if self.position.y > self._target_pos[0] else False
+        elif self._directions[0][1] < 0:
+            return True if self.position.y < self._target_pos[0] else False
+        return False
+
+    def __check_x_target(self) -> bool:
+        if self._directions[0][0] > 0:
+            return True if self.position.x > self._target_pos[0] else False
+        elif self._directions[0][0] < 0:
+            return True if self.position.x < self._target_pos[0] else False
+        return False
