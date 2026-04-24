@@ -72,7 +72,6 @@ class Coral(Entity):
         self._shot_timer -= delta
 
         if self._shot_timer < 0:
-            print("yu")
             # get player position and difference
             player: Vector2 = self._world.entity_action(self, "player_pos")
             diff: Vector2 = Vector2(player.x - self._position.x, player.y - self._position.y)
