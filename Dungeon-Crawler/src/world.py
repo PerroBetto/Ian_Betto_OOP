@@ -25,7 +25,9 @@ from entities.entity_mod import Entity
 from entities.jelly import Jelly
 from entities.player import Player
 from items.item import Item
-# from ui import UI
+from items.projectile import Projectile
+from items.bubble import BubbleWeapon
+from ui import UI
 # from structures import Dungeon, Room
 
 
@@ -68,10 +70,7 @@ class World:
         self._entity_init()
 
         # initialize items
-        self._items: list[Item] = list[Item]()
-        self._items.append(Item(self, position=pygame.Vector2(800, 0)))
-        # self._item_slot : Item = Item()
-        self._inventory : list[Item] = list[Item]()
+        self._item_init()
 
         # initialize UI
         self._ui_init()
@@ -104,6 +103,7 @@ class World:
         """
         self._entities: list[Entity] = list[Entity]()
         self._entities.append(Jelly(self, position=pygame.Vector2(600, 255)))
+        self._entities.append(Jelly(self, position=pygame.Vector2(300, 755)))
         self._player: Player = Player(self, position=pygame.Vector2(400, 255))
 
     def _ui_init(self) -> None:  # FIXME
@@ -115,8 +115,23 @@ class World:
 
         > display.
         """
-        # self._ui : UI = UI()
-        pass
+        self._ui : UI = UI()
+        self._ui.update_item_slot(self._item_slot.name)
+
+    def _item_init(self) -> None:
+        """
+        Item initializer.
+        > Item slot should contain the bubble weapon.
+
+        > Inventory and grounded items should be empty.
+        """
+        self._items: list[Item] = list[Item]()
+        self._items = [
+            Item(self, position=pygame.Vector2(800, 0)),
+            Item(self, position=pygame.Vector2(304, 564))
+            ]
+        self._item_slot : Item = BubbleWeapon(self)
+        self._inventory : list[Item] = list[Item]()
 
 # --- loop method ---
 
@@ -137,16 +152,19 @@ class World:
 
         for indx, _entity in enumerate(self._entities):
             self._entities[indx].loop(delta)
-            # print(f"{_entity}: {_entity.move_speed}")
+            if _entity.HP <= 0:
+                self._entities.pop(indx)
 
         if len(self._items):
             for indx, _item in enumerate(self._items):
                 self._items[indx].loop(delta)
 
+        self._item_slot.loop(delta)
+
         # print(self._inventory)
 
-        self.update_room
-        self.update_ui
+        self.update_room()
+        self.update_ui()
         # print("world-loop")
 
 # --- render method ---
@@ -186,6 +204,13 @@ class World:
         if len(self._items):
             for indx, _item in enumerate(self._items):
                 temp.append(self._items[indx].render())
+
+        for proj in self._item_slot.render_projectiles():
+            temp.append(proj)
+
+        # final one on display stack
+        for elem in self._ui.render():
+            temp.append(elem)
 
         return temp
 
@@ -233,22 +258,9 @@ class World:
 
         > key and bomb count, etc.
         """
-        pass
+        self._ui.update_hearts(self._player.HP)
 
 # --- entity methods ---
-
-    # def get_collide(self, entity: Entity) -> bool:  # FIXME
-    #     """
-    #     Detects the collision of the passed entity in relation to all collidables.
-    #     > Collidables include walls, doors, pits, and other entities.
-
-    #     Args:
-    #         entity (Entity): Entity passing itself to check their own collision
-
-    #     Returns:
-    #         bool: True if collided, False if not
-    #     """
-    #     return bool()
 
     def player_action(self, action: str) -> None:
         """
@@ -264,7 +276,9 @@ class World:
         Args:
             action (str): Action ID passed by player.
         """
-        print(action)
+        if action == "action_a":
+            self._item_slot.item_action_a(
+                self._player.position, self._player.look_dir)
 
     def quit_controller(self) -> None:
         """FIXME"""
@@ -300,20 +314,26 @@ class World:
         elif action == "player_col":
             if pygame.sprite.collide_rect(entity, self._player):
                 return self._player.rect
-        elif action == "player_dmg_10":
-            self._player.damage(10)
+        elif action == "player_dmg_1":
+            self._player.damage(1)
 
         return 0
 
 # ---- item methods ----
 
-    def item_action(self, item: Item, action: str) -> Any:
+    def item_action(self, item: Item, action: str,
+                    projectile: Projectile | None = None) -> Any:
         """FIXME"""
         if action == "grabbed":
             if pygame.sprite.collide_rect(item, self._player):
                 self._inventory.append(item)
                 self._items.remove(item)
                 return True
+        if action == "attack":
+            for entity in self._entities:
+                if projectile and pygame.sprite.collide_rect(projectile, entity):
+                    entity.damage(projectile.damage_points)
+                    return True
         return 0
 
 # --- properties ---
@@ -367,10 +387,13 @@ class World:
         for item in self._inventory:
             inventory_items.append(
                 {
-                    'name': item.__str__(),
-                    'position': item.position
+                    'name': item.__str__()
                 }
             )
         data['items']['inventory'] = inventory_items
+
+        data['items']['slot'] = {
+            'name': self._item_slot.__str__()
+        }
 
         return data

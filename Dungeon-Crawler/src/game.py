@@ -35,6 +35,7 @@ class Game:
     # --- constants ---
     _FPS: int = 60
     _VOLUME: float = 0.5
+    _RESOLUTION: tuple[int, int] = (1440, 810)
 
     __slots__ = ["_debug_mode"   # bool
                  , "_debug_font"  # pygame.font.SysFont
@@ -78,7 +79,7 @@ class Game:
         # initialize game resolution
         self._resolution: tuple[int, int] = (0, 0)
         if resolution is None:
-            self._resolution = (1440, 810)
+            self._resolution = self._RESOLUTION
         else:
             self._resolution = resolution
 
@@ -175,7 +176,9 @@ class Game:
         debug_log.append("Inventory Items:")
         for item in debug_data['items']['inventory']:
             debug_log.append(f" {item['name']}:")
-            debug_log.append(f"     position: {item['position']}")
+
+        debug_log.append("Item Slot:")
+        debug_log.append(f" {debug_data['items']['slot']['name']}")
 
         # Display to screen
         for i, line in enumerate(debug_log):
@@ -205,7 +208,7 @@ class Game:
         """
         self._screen.fill("black")
         items = self._world.render()
-        for i, n in enumerate(items):
+        for i, _n in enumerate(items):
             self._screen.blit(items[i][0], items[i][1])
 
         # check to display debug

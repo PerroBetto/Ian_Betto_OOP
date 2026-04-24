@@ -1,9 +1,10 @@
 """FIXME"""
 from pathlib import Path
 from typing import Any
+from math import sin
 
 import pygame
-from pygame import Vector2, Surface
+from pygame import Vector2, Surface, Rect
 
 from entities.entity_mod import Entity
 
@@ -25,7 +26,7 @@ class Jelly(Entity):
                  speed: float = 300,
                  clamp_speed: float = 300,
                  friction: float = 5,
-                 HP: int | None = None,
+                 HP: int = 3,
                  assets: dict[str, Surface] | None = None,
                  image: Surface | None = None,
                  anim_timer: float = 100) -> None:
@@ -34,18 +35,26 @@ class Jelly(Entity):
 
         self._assets: dict[str, Surface] = dict[str, Surface]()
         jelly_sprite_sheet = Path(__file__).parent / \
-            "../../assets/visual/sprites/player/Jelly-Sheet.png"
+            "../../assets/visual/sprites/jelly/Jelly-Sheet.png"
         sheet: Surface = pygame.image.load(jelly_sprite_sheet)
         self._all_frames_from_sheet(sheet, (16, 16), 2, "M", "")
 
         super().__init__(world, speed=speed, clamp_speed=clamp_speed, friction=friction,
-                         position=position, assets=self._assets, image=self._assets["M1"])
+                         position=position, assets=self._assets, image=self._assets["M1"],
+                         HP=HP)
 
 # ---- base ----
 
     def loop(self, delta: float, move: Vector2 | None = None) -> None:
         self.jelly_attack()
         return super().loop(delta, self.jelly_move(delta))
+
+    def render(self, time: float) -> tuple[Surface, Rect]:
+        if self._invincibility > 0:
+            self.image.set_alpha(int(abs(sin(time * 10) * 255)))
+        else:
+            self.image.set_alpha(255)
+        return super().render(time)
 
     def animate(self, time: float) -> None:
         anim_step: int = int(time % 2)
@@ -88,4 +97,4 @@ class Jelly(Entity):
 
     def jelly_attack(self) -> None:
         if self._world.entity_action(self, "player_col"):
-            self._world.entity_action(self, "player_dmg_10")
+            self._world.entity_action(self, "player_dmg_1")
