@@ -25,13 +25,10 @@ from entities.entity_mod import Entity
 from entities.jelly import Jelly
 from entities.player import Player
 from items.item import Item
-from sound import SoundManager
 from structures import Dungeon, Room
 from items.projectile import Projectile
 from items.bubble import BubbleWeapon
 from ui import UI
-from structures import Dungeon, Room
-from generation import Generation
 
 
 class World:
@@ -47,7 +44,7 @@ class World:
                  , "_time"  # : float
                  , "_sounds"  # : list[int] // int representation of sound
                  , "_prev_music"  # : list[int] // int representation of music
-                 , "_Music_IDs"  # : dict[str, int] // string representation of music to int representation
+                 , "_Music_IDs"  # : dict[str, int] // string representation of music
                  , "_prev_room_type"
                  , "_entities"  # : list[Entity]
                  , "_player"  # : Player
@@ -70,7 +67,8 @@ class World:
         Args:
             seed (Any): Dungeon seed.
         """
-        # initialize sounds
+        # initialize time
+        self._time: float = float()
 
         # initialize entities
         self._entity_init()
@@ -83,10 +81,6 @@ class World:
 
         # initialize dungeon
         self._dungeon_init(seed)
-        self._curr_room: Room = self._dungeon.rooms[(0, 0)]
-        self._prev_room: Room = self._dungeon.rooms[(-1, -1)]
-        self._prev_room_type: str = "none"
-        self._time: float = float()
 
         # inialize sounds
         self._sounds: list[int] = list[int]()
@@ -110,8 +104,8 @@ class World:
         """
         self._dungeon_seed: Any = seed
         self._dungeon: Dungeon = Dungeon(self._dungeon_seed)
-        self._curr_room: Room = Room(0, 0)
-        self._prev_room: Room = Room(-1, -1)
+        self._curr_room: Room = self._dungeon.rooms[(0, 0)]
+        self._prev_room: Room = self._dungeon.rooms[(0, 0)]
         self._prev_room_type: str = "none"
 
     def _entity_init(self) -> None:
@@ -214,9 +208,10 @@ class World:
         # self._ui.render()
         # self._curr_room.render()
 
-        temp = []
+        temp: list[tuple[pygame.Surface, pygame.Rect]] = []
 
-        temp.append(self.update_room())
+        for to_render in self.render_room():
+            temp.append(to_render)
 
         temp.append(self._player.render(self._time))
         for indx, _entity in enumerate(self._entities):
@@ -277,7 +272,7 @@ class World:
 
 # --- dungeon methods ---
 
-    def update_room(self) -> tuple[pygame.surface.Surface, pygame.rect.Rect]:  # FIXME
+    def update_room(self) -> None:  # FIXME
         """
         Updates the room according to changes.
 
@@ -285,29 +280,44 @@ class World:
 
         > door unlocks, etc.
         """
+        next_room = (self._curr_room.x, self._curr_room.y)
+        if self._player._controller.down_movement:
+            next_room = (self._curr_room.x, self._curr_room.y - 1)
+        if self._player._controller.up_movement:
+            next_room = (self._curr_room.x, self._curr_room.y + 1)
+        if self._player._controller.left_movement:
+            next_room = (self._curr_room.x - 1, self._curr_room.y)
+        if self._player._controller.right_movement:
+            next_room = (self._curr_room.x + 1, self._curr_room.y)
 
-        temp: list[tuple[pygame.surface.Surface, pygame.rect.Rect]] = []
+        try:
+            self._curr_room = self._dungeon.rooms[next_room]
+        except KeyError:
+            pass
 
-        if self._curr_room.x != self._prev_room.x or self._curr_room.y != self._prev_room.y:
+        print(self._curr_room)
+        # change of room
+        if self._curr_room is not self._prev_room:
             self._prev_room_type = self._curr_room.room_type
-            self._prev_room.x = self._curr_room.x
-            self._prev_room.y = self._curr_room.y
 
-            x, y = self._curr_room[self._curr_room.x], self._curr_room[self._curr_room.y] # FIXME - need to see which door the player went though
-            directions = ["W", "N", "E", "S"]
-            for d in directions:
-                img_directory = self._dungeon.generation.room_walls.get((x, y, d))
-                if img_directory:
-                    if d == "W":
-                        temp.append((pygame.image.load(img_directory).convert_alpha(), pygame.Rect(0, 0, 256, 160))) # FIXME - need to set rect walls correctly
-                    elif d == "N":
-                        temp.append((pygame.image.load(img_directory).convert_alpha(), pygame.Rect(0, 0, 256, 160))) # FIXME - need to set rect walls correctly
-                    elif d == "E":
-                        temp.append((pygame.image.load(img_directory).convert_alpha(), pygame.Rect(0, 0, 256, 160))) # FIXME - need to set rect walls correctly
-                    elif d == "S":
-                        temp.append((pygame.image.load(img_directory).convert_alpha(), pygame.Rect(0, 0, 256, 160))) # FIXME - need to set rect walls correctly
+    def render_room(self) -> list[tuple[pygame.Surface, pygame.Rect]]:
+        """
+        Render the room
+        """
+        temp: list[tuple[pygame.Surface, pygame.Rect]] = []
+
+        x, y = self._curr_room.x, self._curr_room.y  # FIXME - need to see which door the player went though
+        directions = ["W", "N", "E", "S"]
+        for d in directions:
+            img_directory = self._dungeon._generation.room_walls.get((x, y, d))
+            if img_directory:
+                print(f"d: {d}\nimg: {img_directory['sel_img'].__str__()}")
+                wall_img: pygame.Surface = pygame.image.load(
+                    img_directory['sel_img'].__str__()).convert_alpha()
+                wall_img = pygame.transform.scale(
+                    wall_img, (256 * Dungeon._SCALE, 160 * Dungeon._SCALE))
+                temp.append((wall_img, pygame.Rect(80, 5, 256, 160)))  # FIXME - need to set rect walls correctly
         return temp
-                    
 
 # --- UI methods ---
 

@@ -1,6 +1,7 @@
 import sys
+import random
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = PROJECT_ROOT / "src"
@@ -8,8 +9,6 @@ WALL_TEXTURE_ROOT = PROJECT_ROOT / "assets" / "visual" / "textures" / "walls"
 PROJECT_DIR_NAME = PROJECT_ROOT.name
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
-
-import random
 
 if TYPE_CHECKING:
     try:
@@ -27,18 +26,18 @@ class Generation:
     X -> (int) x cord in map
 
     Y -> (int) y cord in map
-    
+
     has_door -> (bool) if the wall needs a door
 
     is_open -> (bool) if door, is it open (default true except boss door, then false)
-    
+
     sel_img -> (str) our path to get to the right texture (boss textures are still being made)
     """
-    def __init__(self, dungeon: Optional["Dungeon"] = None):
-        self.dungeon = dungeon
-        seed_value = self.dungeon.seed if self.dungeon is not None else None
+    def __init__(self, dungeon: Any = None):
+        self.dungeon: Dungeon = dungeon
+        seed_value = self.dungeon._seed if self.dungeon is not None else None
         self.rng = random.Random(seed_value)
-        self.directions = [("N", (0, -1)), ("E", (1, 0)), ("S", (0, 1)), ("W", (-1, 0))] 
+        self.directions = [("N", (0, 1)), ("E", (1, 0)), ("S", (0, -1)), ("W", (-1, 0))] 
         # First is checking Left (W), Second is checking Up (N), Thrird is checking Right (E), Fourth is Down (S)
         self.sel_img: str = f"{PROJECT_DIR_NAME}/assets/visual/textures/walls"
         self.room_walls: dict[tuple[int, int, str], dict[str, object]] = {}
@@ -50,7 +49,7 @@ class Generation:
         # isopen, if hasdoor is true, then isopen will state if our texture should use the open or closed state
         # sel_img, our path to get to the right texture (no need to specify boss texture or not, should be fine either way)
 
-    def Apply_textures(self):
+    def Apply_textures(self) -> None:
         """
         Creates textures based off dungeon layout, structures.py must be called before this function is called.
         All wall data is appended into room_walls:
@@ -71,7 +70,7 @@ class Generation:
                                 self.sel_img += "/boss/S_x_Boss.png"
                                 self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)    
                                 self.sel_img = f"{PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next wall
-                                break # South wall of boss room will always be closed, so we can break out of the loop after storing the wall
+                                break  # South wall of boss room will always be closed, so we can break out of the loop after storing the wall
                             self.sel_img += "/door/S_o.png"
                             self._store_wall(cur_room.x, cur_room.y, direction_check, True, True, self.sel_img)
                             self.sel_img = f"{PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next wall
@@ -127,22 +126,22 @@ class Generation:
                         self._store_wall(cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
                     self.sel_img = f"{PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next wall
 
-    def Sel_ori(self, wall_ori: int):
-            """Sets the orientation for the wall image.
+    def Sel_ori(self, wall_ori: int) -> None:
+        """Sets the orientation for the wall image.
 
-            Args:
-                wall_ori (str): The orientation of the wall ('W', 'N', 'E', 'S').
-            """
-            if wall_ori == 'W':
-                self.sel_img += "/W_"
-            if wall_ori == 'N':
-                self.sel_img += "/N_"
-            if wall_ori == 'E':
-                self.sel_img += "/E_"
-            if wall_ori == 'S':
-                self.sel_img += "/S_"
+        Args:
+            wall_ori (str): The orientation of the wall ('W', 'N', 'E', 'S').
+        """
+        if wall_ori == 'W':
+            self.sel_img += "/W_"
+        if wall_ori == 'N':
+            self.sel_img += "/N_"
+        if wall_ori == 'E':
+            self.sel_img += "/E_"
+        if wall_ori == 'S':
+            self.sel_img += "/S_"
 
-    def Ran_wall(self):
+    def Ran_wall(self) -> None:
         """
         Selects a random wall based on our random seed to allow for simular walls with like seed
         """
@@ -155,7 +154,7 @@ class Generation:
             self.sel_img += "3.png"
         if wall_type == 4:
             self.sel_img += "4.png"
-    
+
     def whole_filepath(self, rel_path: str) -> Path:
         """
         Creates full used file path to locate all texture data
@@ -171,7 +170,11 @@ class Generation:
             rel_path_obj = Path(*rel_path_obj.parts[1:])
         return PROJECT_ROOT / rel_path_obj
 
-    def _store_wall(self, x: int, y: int, orientation: str, hasdoor: bool, isopen: bool, rel_path: str | Path):
+    def _store_wall(self, x: int, y: int,
+                    orientation: str,
+                    hasdoor: bool,
+                    isopen: bool,
+                    rel_path: str | Path) -> None:
         """
         Stores wall data in the room_walls dictionary.
 
