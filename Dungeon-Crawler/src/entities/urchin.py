@@ -42,7 +42,6 @@ class Urchin(Entity):
             "../../assets/visual/sprites/urchin/urchin-sheet.png"
         sheet: Surface = pygame.image.load(urchin_sprite_sheet)
         self._all_frames_from_sheet(sheet, (32, 32), 4, "M", "")
-        print(self._assets)
 
         super().__init__(world, position, speed, clamp_speed, friction,
                          HP, image=self._assets["M0"], assets=self._assets)
@@ -53,7 +52,7 @@ class Urchin(Entity):
         self.urchin_attack()
         return super().loop(delta, self.urchin_move(delta))
 
-    def render(self, time: float) -> tuple[Surface, Rect]:
+    def render(self, time: float) -> list[tuple[Surface, Rect]]:
         if self._invincibility > 0:
             self.image.set_alpha(int(abs(sin(time * 10) * 255)))
         else:

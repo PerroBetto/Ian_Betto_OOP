@@ -164,7 +164,7 @@ class Entity(sprite.Sprite):
         if self._invincibility > 0:
             self._invincibility -= delta
 
-    def render(self, time: float) -> tuple[Surface, Rect]:
+    def render(self, time: float) -> list[tuple[Surface, Rect]]:
         """
         Returns the current image and rect of an entity.
         """
@@ -173,7 +173,7 @@ class Entity(sprite.Sprite):
             self.image.set_colorkey((0, 0, 0))
         except AttributeError:
             raise
-        return (self.image, self.rect)
+        return [(self.image, self.rect)]
 
 # ----- entity methods -----
 

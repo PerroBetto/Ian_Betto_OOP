@@ -24,6 +24,7 @@ import pygame
 from entities.entity_mod import Entity
 from entities.jelly import Jelly
 from entities.urchin import Urchin
+from entities.coral import Coral
 from entities.player import Player
 from items.item import Item
 from items.projectile import Projectile
@@ -106,6 +107,7 @@ class World:
         self._entities.append(Jelly(self, position=pygame.Vector2(600, 255)))
         self._entities.append(Jelly(self, position=pygame.Vector2(300, 755)))
         self._entities.append(Urchin(self, position=pygame.Vector2(800, 300)))
+        self._entities.append(Coral(self, position=pygame.Vector2(1200, 400)))
         self._player: Player = Player(self, position=pygame.Vector2(400, 255))
 
     def _ui_init(self) -> None:  # FIXME
@@ -198,10 +200,11 @@ class World:
         # self._ui.render()
         # self._curr_room.render()
 
-        temp = []
-        temp.append(self._player.render(self._time))
-        for indx, _entity in enumerate(self._entities):
-            temp.append(self._entities[indx].render(self._time))
+        temp: list[tuple[pygame.Surface, pygame.Rect]] = []
+        temp.append(self._player.render(self._time)[0])
+        for entity in self._entities:
+            for entity_item in entity.render(self._time):
+                temp.append(entity_item)
 
         if len(self._items):
             for indx, _item in enumerate(self._items):
@@ -286,7 +289,8 @@ class World:
         """FIXME"""
         self._player.quit_controller()
 
-    def entity_action(self, entity: Entity, action: str) -> Any:
+    def entity_action(self, entity: Entity, action: str,
+                      projectile: Projectile | None = None) -> Any:
         """
         Get entity actons and change the world accordingly.
         > Whenever an entity makes an action (such as attacking)
@@ -317,6 +321,9 @@ class World:
         elif action == "player_pos":
             return self._player.position
         elif action == "player_col":
+            if projectile:
+                if pygame.sprite.collide_rect(projectile, self._player):
+                    return self._player.rect
             if pygame.sprite.collide_rect(entity, self._player):
                 return self._player.rect
         elif action == "player_dmg_1":

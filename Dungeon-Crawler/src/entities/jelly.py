@@ -46,7 +46,7 @@ class Jelly(Entity):
         self.jelly_attack()
         return super().loop(delta, self.jelly_move(delta))
 
-    def render(self, time: float) -> tuple[Surface, Rect]:
+    def render(self, time: float) -> list[tuple[Surface, Rect]]:
         if self._invincibility > 0:
             self.image.set_alpha(int(abs(sin(time * 10) * 255)))
         else:
