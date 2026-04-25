@@ -306,18 +306,24 @@ class World:
         """
         temp: list[tuple[pygame.Surface, pygame.Rect]] = []
 
-        x, y = self._curr_room.x, self._curr_room.y  # FIXME - need to see which door the player went though
+        floor_img: pygame.Surface = pygame.image.load(
+            self._dungeon._generation.FLOOR_TEXTURE_ROOT.__str__()).convert_alpha()
+        floor_img = pygame.transform.scale(
+            floor_img, (256 * Dungeon._SCALE, 160 * Dungeon._SCALE))
+        temp.append((floor_img, pygame.Rect(80, 5, 256, 160)))
+
+        x, y = self._curr_room.x, self._curr_room.y
         directions = ["W", "N", "E", "S"]
         for d in directions:
             img_directory = self._dungeon._generation.room_walls.get((x, y, d))
-            print(f"img_directory: {img_directory}", f"for wall: {(x, y, d)}")
+            # print(f"img_directory: {img_directory}", f"for wall: {(x, y, d)}")
             if img_directory:
                 # print(f"d: {d}\nimg: {img_directory['sel_img'].__str__()}")
                 wall_img: pygame.Surface = pygame.image.load(
                     img_directory['sel_img'].__str__()).convert_alpha()
                 wall_img = pygame.transform.scale(
                     wall_img, (256 * Dungeon._SCALE, 160 * Dungeon._SCALE))
-                temp.append((wall_img, pygame.Rect(80, 5, 256, 160)))  # FIXME - need to set rect walls correctly
+                temp.append((wall_img, pygame.Rect(80, 5, 256, 160)))
 
         return temp
 

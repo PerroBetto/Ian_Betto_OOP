@@ -189,39 +189,52 @@ class Dungeon:
         isopen = wall_data["isopen"]
 
         if orientation == "N":
-            if hasdoor and isopen:
-                return [
-                    pygame.Rect(80, 5, 585, 160),   # left segment
-                    pygame.Rect(665, 5, 115, 160),   # door band
-                    pygame.Rect(780, 5, 590, 160),  # right segment
-                ]
-            return [pygame.Rect(80, 5, 1290, 160)]
-
-        if orientation == "S":
-            if hasdoor and isopen:
-                return [
-                    pygame.Rect(80, 725, 555, 80),   # left segment
-                    pygame.Rect(633, 725, 173, 80),   # narrow door band
-                    pygame.Rect(804, 725, 570, 80),  # right segment
-                ]
-            return [pygame.Rect(80, 725, 1290, 80)]
-
-        if orientation == "E":
-            if hasdoor and isopen:
-                return [
-                    pygame.Rect(1200, 5, 170, 370),    # top segment
-                    pygame.Rect(1200, 375, 170, 110),   # door band
-                    pygame.Rect(1200, 485, 170, 320),  # bottom segment
-                ]
-            return [pygame.Rect(1200, 5, 170, 800)]
-
-        if orientation == "W":
-            if hasdoor and isopen:
-                return [
-                    pygame.Rect(80, 5, 164, 375),    # top segment
-                    pygame.Rect(80, 380, 165, 110),   # door band
-                    pygame.Rect(80, 490, 164, 315),  # bottom segment
-                ]
-            return [pygame.Rect(80, 5, 164, 800)]
+            return self.get_wall_N_rects(hasdoor, isopen)
+        elif orientation == "S":
+            return self.get_wall_S_rects(hasdoor, isopen)
+        elif orientation == "E":
+            return self.get_wall_E_rects(hasdoor, isopen)
+        elif orientation == "W":
+            return self.get_wall_W_rects(hasdoor, isopen)
 
         raise ValueError(f"Invalid orientation for wall hitbox: {orientation}")
+
+    def get_wall_N_rects(self, hasdoor: object, isopen: object) -> list[pygame.Rect]:
+        """return North wall rects"""
+        if hasdoor and isopen:
+            return [
+                pygame.Rect(80, 5, 585, 160),   # left segment
+                pygame.Rect(665, 5, 115, 160),   # door band
+                pygame.Rect(780, 5, 590, 160),  # right segment
+            ]
+        return [pygame.Rect(80, 5, 1290, 160)]
+
+    def get_wall_S_rects(self, hasdoor: object, isopen: object) -> list[pygame.Rect]:
+        """return South wall rects"""
+        if hasdoor and isopen:
+            return [
+                pygame.Rect(80, 725, 555, 80),   # left segment
+                pygame.Rect(633, 725, 173, 80),   # narrow door band
+                pygame.Rect(804, 725, 570, 80),  # right segment
+            ]
+        return [pygame.Rect(80, 725, 1290, 80)]
+
+    def get_wall_E_rects(self, hasdoor: object, isopen: object) -> list[pygame.Rect]:
+        """return East wall rects"""
+        if hasdoor and isopen:
+            return [
+                pygame.Rect(1200, 5, 170, 370),    # top segment
+                pygame.Rect(1200, 375, 170, 110),   # door band
+                pygame.Rect(1200, 485, 170, 320),  # bottom segment
+            ]
+        return [pygame.Rect(1200, 5, 170, 800)]
+
+    def get_wall_W_rects(self, hasdoor: object, isopen: object) -> list[pygame.Rect]:
+        """return West wall rects"""
+        if hasdoor and isopen:
+            return [
+                pygame.Rect(80, 5, 164, 375),    # top segment
+                pygame.Rect(80, 380, 165, 110),   # door band
+                pygame.Rect(80, 490, 164, 315),  # bottom segment
+            ]
+        return [pygame.Rect(80, 5, 164, 800)]

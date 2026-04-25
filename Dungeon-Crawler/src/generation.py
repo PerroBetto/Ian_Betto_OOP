@@ -1,7 +1,7 @@
 import sys
 import random
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 
 if TYPE_CHECKING:
@@ -13,7 +13,8 @@ if TYPE_CHECKING:
 
 class Generation:
     """
-    Generation class for creating textures based off dungeon layout, requires structures.py to be called.
+    Generation class for creating textures based off dungeon layout,
+    requires structures.py to be called.
 
     All wall data is appended into room_walls:
 
@@ -31,28 +32,35 @@ class Generation:
         self.dungeon: Dungeon = dungeon
         seed_value = self.dungeon._seed if self.dungeon is not None else None
         self.rng = random.Random(seed_value)
-        self.directions = [("N", (0, 1)), ("E", (1, 0)), ("W", (-1, 0)), ("S", (0, -1))] 
+        self.directions = [("N", (0, 1)), ("E", (1, 0)), ("W", (-1, 0)), ("S", (0, -1))]
         self.PROJECT_ROOT = Path(__file__).resolve().parents[1]
         self.SRC_ROOT = self.PROJECT_ROOT / "src"
-        self.WALL_TEXTURE_ROOT = self.PROJECT_ROOT / "assets" / "visual" / "textures" / "walls"
-        self.FLOOR_TEXTURE_ROOT = self.PROJECT_ROOT / "assets" / "visual" / "textures" / "enemy" / "1.png"
+        self.WALL_TEXTURE_ROOT = self.PROJECT_ROOT / \
+            "assets" / "visual" / "textures" / "walls"
+        self.FLOOR_TEXTURE_ROOT = self.PROJECT_ROOT / \
+            "assets" / "visual" / "textures" / "rooms" / "enemy" / "1.png"
         self.PROJECT_DIR_NAME = self.PROJECT_ROOT.name
         if str(self.SRC_ROOT) not in sys.path:
             sys.path.insert(0, str(self.SRC_ROOT))
-        # First is checking Left (W), Second is checking Up (N), Thrird is checking Right (E), Fourth is Down (S)
+        # First is checking Left (W), Second is checking Up (N),
+        # Thrird is checking Right (E), Fourth is Down (S)
         self.sel_img: str = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls"
         self.room_walls: dict[tuple[int, int, str], dict[str, object]] = {}
         # room_walls information:
         # x: X cordinate on map
         # y: y cordinate on map
-        # ori: orientation (West, North, East, or South) to know which rectangle to apply the texture to, may not need this!
+        # ori: orientation (West, North, East, or South) to know which rectangle to apply
+        # the texture to, may not need this!
         # hasdoor: know if we have a wall or door
-        # isopen, if hasdoor is true, then isopen will state if our texture should use the open or closed state
-        # sel_img, our path to get to the right texture (no need to specify boss texture or not, should be fine either way)
+        # isopen, if hasdoor is true, then isopen will state if our texture should use
+        # the open or closed state
+        # sel_img, our path to get to the right texture (no need to specify boss texture or not,
+        # should be fine either way)
 
     def Apply_textures(self) -> None:
         """
-        Creates textures based off dungeon layout, structures.py must be called before this function is called.
+        Creates textures based off dungeon layout, structures.py must be called before
+        this function is called.
         All wall data is appended into room_walls:
         X -> (int) x cord in map
         Y -> (int) y cord in map
@@ -63,71 +71,72 @@ class Generation:
         self.room_walls.clear()
 
         for cur_room in self.dungeon.rooms.values():
-            if cur_room.room_type == "enemy" or cur_room.room_type == "puzzle" or cur_room.room_type == "start":
-                for direction_check, (x, y) in self.directions:
-                    if direction_check == "S":
-                        if (cur_room.x + x, cur_room.y + y) in self.dungeon.rooms:
-                            if self.dungeon.rooms[(cur_room.x + x, cur_room.y + y)].room_type == "boss":
-                                self.sel_img += "/boss/S_x_Boss.png"
-                                self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)    
-                                self.sel_img = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next wall
-                                break # South wall of boss room will always be closed, so we can break out of the loop after storing the wall
-                            self.sel_img += "/door/S_o.png"
-                            self._store_wall(cur_room.x, cur_room.y, direction_check, True, True, self.sel_img)
-                            self.sel_img = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next wall
-                            break # South wall of non-boss room will always be open, so we can break out of the loop after storing the wall
-                        else:
-                            self.sel_img += "/empty/S_1.png"
-                            self._store_wall(cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
-                        self.sel_img = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next wall
-                        continue
-
+            for direction_check, (x, y) in self.directions:
+                if direction_check == "S":
                     if (cur_room.x + x, cur_room.y + y) in self.dungeon.rooms:
                         if self.dungeon.rooms[(cur_room.x + x, cur_room.y + y)].room_type == "boss":
+                            self.sel_img += "/boss/S_x_Boss.png"
+                            self._store_wall(
+                                cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
+                            self._reset_sel_img()
+                            # South wall of boss room will always be closed,
+                            # so we can break out of the loop after storing the wall
+                            break
+                        elif cur_room.room_type == "boss":
                             self.sel_img += "/boss/"
                             self.Sel_ori(direction_check)
-                            self.sel_img += "x_Boss.png"
-                            self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
-                            self.sel_img = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next room
+                            self.sel_img += "o_Boss.png"
+                            self._store_wall(
+                                cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
+                            self._reset_sel_img
                             continue
-                        self.sel_img += "/door/"
-                        self.Sel_ori(direction_check)
-                        self.sel_img += "o_"
-                        self.Ran_wall()
-                        self._store_wall(cur_room.x, cur_room.y, direction_check, True, True, self.sel_img)
-                        self.sel_img = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next room
+                        self.sel_img += "/door/S_o.png"
+                        self._store_wall(
+                            cur_room.x, cur_room.y, direction_check, True, True, self.sel_img)
+                        self._reset_sel_img()
+                        # South wall of non-boss room will always be open,
+                        # so we can break out of the loop after storing the wall
+                        break
                     else:
-                        self.sel_img += "/empty/"
+                        self.sel_img += "/empty/S_1.png"
+                        self._store_wall(
+                            cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
+                    self._reset_sel_img()
+                    continue
+
+                if (cur_room.x + x, cur_room.y + y) in self.dungeon.rooms:
+                    if self.dungeon.rooms[(cur_room.x + x, cur_room.y + y)].room_type == "boss":
+                        self.sel_img += "/boss/"
                         self.Sel_ori(direction_check)
-                        self.Ran_wall()
-                        self._store_wall(cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
-                    self.sel_img = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next wall
-            if cur_room.room_type == "boss":
-                for direction_check, (x, y) in self.directions:
-                    if direction_check == "S":
-                        if (cur_room.x + x, cur_room.y + y) in self.dungeon.rooms:
-                            # Boss south door exists but remains closed by default.
-                            self.sel_img += "/boss/N_x_Boss.png"
-                            self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
-                        else:
-                            # No south door: use empty south wall variant.
-                            self.sel_img += "/empty/S_1.png"
-                            self._store_wall(cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
-                        self.sel_img = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls"
+                        self.sel_img += "x_Boss.png"
+                        self._store_wall(
+                            cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
+                        self._reset_sel_img()
                         continue
-
-                    if (cur_room.x + x, cur_room.y + y) in self.dungeon.rooms:
-                        self.sel_img += "/door/"
+                    elif cur_room.room_type == "boss":
+                        self.sel_img += "/boss/"
                         self.Sel_ori(direction_check)
-                        self.sel_img += "o_"
-                        self.Ran_wall()
-                        self._store_wall(cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
-                    else:
-                        self.sel_img += "/boss/N_x_Boss.png" # By defualt, the boss room will remain closed till changed later
-                        self._store_wall(cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
-                    self.sel_img = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls" # reset sel_img for next wall
+                        self.sel_img += "o_Boss.png"
+                        self._store_wall(
+                            cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
+                        self._reset_sel_img()
+                        continue
+                    self.sel_img += "/door/"
+                    self.Sel_ori(direction_check)
+                    self.sel_img += "o_"
+                    self.Ran_wall()
+                    self._store_wall(
+                        cur_room.x, cur_room.y, direction_check, True, True, self.sel_img)
+                    self._reset_sel_img()
+                else:
+                    self.sel_img += "/empty/"
+                    self.Sel_ori(direction_check)
+                    self.Ran_wall()
+                    self._store_wall(
+                        cur_room.x, cur_room.y, direction_check, False, False, self.sel_img)
+                self._reset_sel_img()
 
-    def Sel_ori(self, wall_ori: int) -> None:
+    def Sel_ori(self, wall_ori: str) -> None:
         """Sets the orientation for the wall image.
 
         Args:
@@ -170,6 +179,10 @@ class Generation:
         if rel_path_obj.parts and rel_path_obj.parts[0] == self.PROJECT_ROOT.name:
             rel_path_obj = Path(*rel_path_obj.parts[1:])
         return self.PROJECT_ROOT / rel_path_obj
+
+    def _reset_sel_img(self) -> None:
+        """Reset sel_img for next wall"""
+        self.sel_img = f"{self.PROJECT_DIR_NAME}/assets/visual/textures/walls"
 
     def _store_wall(self, x: int, y: int,
                     orientation: str,
