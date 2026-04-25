@@ -102,7 +102,7 @@ class Player(Entity):
 
         super().loop(delta, self.player_movement())
 
-    def render(self, time: float) -> tuple[Surface, Rect]:
+    def render(self, time: float) -> list[tuple[Surface, Rect]]:
         if self._invincibility > 0:
             self.image.set_alpha(int(abs(sin(time * 10) * 255)))
         else:
