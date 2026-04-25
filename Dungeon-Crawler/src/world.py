@@ -58,9 +58,8 @@ class World:
                  , "_ui"  # : UI
                  , "_dungeon"  # : Dungeon
                  , "_dungeon_seed"  # : Any
-                 , "_curr_room"
-                 , "_prev_room"
-                 ]  # : Room
+                 , "_curr_room"  # : Room
+                 , "_prev_room"]  # : Room
 
 # --- initializers ---
 
@@ -122,10 +121,10 @@ class World:
         > the starting room. All regular values should be set.
         """
         self._entities: list[Entity] = list[Entity]()
-        self._entities.append(Jelly(self, position=pygame.Vector2(600, 255)))
-        self._entities.append(Jelly(self, position=pygame.Vector2(300, 755)))
-        self._entities.append(Urchin(self, position=pygame.Vector2(800, 300)))
-        self._entities.append(Coral(self, position=pygame.Vector2(1200, 400)))
+        # self._entities.append(Jelly(self, position=pygame.Vector2(600, 255)))
+        # self._entities.append(Jelly(self, position=pygame.Vector2(300, 755)))
+        # self._entities.append(Urchin(self, position=pygame.Vector2(800, 300)))
+        # self._entities.append(Coral(self, position=pygame.Vector2(1200, 400)))
         self._player: Player = Player(self, position=pygame.Vector2(400, 255))
 
     def _ui_init(self) -> None:  # FIXME
@@ -149,8 +148,8 @@ class World:
         """
         self._items: list[Item] = list[Item]()
         self._items = [
-            Item(self, position=pygame.Vector2(800, 0)),
-            Item(self, position=pygame.Vector2(304, 564))
+            # Item(self, position=pygame.Vector2(800, 0)),
+            # Item(self, position=pygame.Vector2(304, 564))
             ]
         self._item_slot : Item = BubbleWeapon(self)
         self._inventory : list[Item] = list[Item]()
@@ -216,12 +215,9 @@ class World:
         """
         temp: list[tuple[pygame.Surface, pygame.Rect]] = []
 
-        self.play_world_music()
-
         for to_render in self.render_room():
             temp.append(to_render)
-    
-        temp: list[tuple[pygame.Surface, pygame.Rect]] = []
+
         temp.append(self._player.render(self._time)[0])
         for entity in self._entities:
             for entity_item in entity.render(self._time):
@@ -238,6 +234,7 @@ class World:
         for elem in self._ui.render():
             temp.append(elem)
 
+        self.play_world_music()
         self.play_sound_effects()
         return temp
 
@@ -261,14 +258,17 @@ class World:
 
         > Example: Enemy -> Puzzle
         """
-        # print(f"Music curr_room: {self._curr_room.room_type}, Music prev_room: {self._prev_room_type}")
+        # print(f"Music curr_room: {self._curr_room.room_type}, \
+        #       Music prev_room: {self._prev_room_type}")
         if self._curr_room.room_type != self._prev_room_type:
             prev_song = self._prev_music.pop()
-            # print(f"Music prev_song: {prev_song}")
+            print(f"Music prev_song: {prev_song}")
             # print(f"Music curr_song: {self._Music_IDs[self._curr_room.room_type]}")
-            self._sound_manager.stop_audio(prev_song) # stop previous music
-            self._sound_manager.play_audio(self._Music_IDs[self._curr_room.room_type]) # play new music
-            self._prev_music.append(self._Music_IDs[self._curr_room.room_type]) # update prev_music
+            self._sound_manager.stop_audio(prev_song)  # stop previous music
+            # play new music
+            self._sound_manager.play_audio(self._Music_IDs[self._curr_room.room_type])
+            # update prev_music
+            self._prev_music.append(self._Music_IDs[self._curr_room.room_type])
             self._prev_room_type = self._curr_room.room_type
         else:
             pass
@@ -296,7 +296,6 @@ class World:
         """
         old_room = self._curr_room
 
-        print(self._curr_room)
         # change of room
         if self._curr_room is not old_room:
             self._prev_room = old_room
@@ -317,9 +316,7 @@ class World:
         directions = ["W", "N", "E", "S"]
         for d in directions:
             img_directory = self._dungeon._generation.room_walls.get((x, y, d))
-            # print(f"img_directory: {img_directory}", f"for wall: {(x, y, d)}")
             if img_directory:
-                # print(f"d: {d}\nimg: {img_directory['sel_img'].__str__()}")
                 wall_img: pygame.Surface = pygame.image.load(
                     img_directory['sel_img'].__str__()).convert_alpha()
                 wall_img = pygame.transform.scale(
@@ -350,39 +347,22 @@ class World:
         Go to the next room with respects to the cardinal of the door
         the player interacted with.
         """
-
-        cardinal_pairs: dict[str, str] = {
-            'N': 'S',
-            'S': 'N',
-            'E': 'W',
-            'W': 'E'
-        }
         position_tp: dict[str, tuple[float, float]] = {
-            'N': (720, 205),
-            'E': (1156, 445),
-            'S': (720, 685),
-            'W': (285, 445)
+            'N': (720, 725),
+            'E': (240, 445),
+            'S': (720, 150),
+            'W': (1200, 445)
         }
-
-        # next_room = (self._curr_room.x, self._curr_room.y)
-        # if self._player._controller.down_movement:
-        #     next_room = (self._curr_room.x, self._curr_room.y - 1)
-        # if self._player._controller.up_movement:
-        #     next_room = (self._curr_room.x, self._curr_room.y + 1)
-        # if self._player._controller.left_movement:
-        #     next_room = (self._curr_room.x - 1, self._curr_room.y)
-        # if self._player._controller.right_movement:
-        #     next_room = (self._curr_room.x + 1, self._curr_room.y)
 
         next_room: tuple[int, int] = (0, 0)
-        if cardinal_pairs[cardinal] == 'S':
+        if cardinal == 'S':
             next_room = (self._curr_room.x, self._curr_room.y - 1)
-        elif cardinal_pairs[cardinal] == 'N':
+        elif cardinal == 'N':
             next_room = (self._curr_room.x, self._curr_room.y + 1)
-        elif cardinal_pairs[cardinal] == 'E':
+        elif cardinal == 'E':
             next_room = (self._curr_room.x + 1, self._curr_room.y)
-        else:
-            next_room = (self._curr_room.x - 1, self._curr_room.y + 1)
+        elif cardinal == 'W':
+            next_room = (self._curr_room.x - 1, self._curr_room.y)
 
         try:
             self._curr_room = self._dungeon.rooms[next_room]
@@ -390,8 +370,8 @@ class World:
             raise KeyError("room doesnt exist")
 
         self._player.position = pygame.Vector2(
-            position_tp[cardinal_pairs[cardinal]][0],
-            position_tp[cardinal_pairs[cardinal]][1])
+            position_tp[cardinal][0],
+            position_tp[cardinal][1])
 
 # --- UI methods ---
 
@@ -452,7 +432,9 @@ class World:
         # this collision return is temporary.
         # s_col returns all static objects (walls, pits, etc)
         if action == "s_col":
-            return self._entity_static_collision(entity)
+            if projectile:
+                return self._static_collision(projectile)
+            return self._static_collision(entity)
         elif action == "player_pos":
             return self._player.position
         elif action == "player_col":
@@ -468,30 +450,29 @@ class World:
 
         return 0
 
-    def _entity_static_collision(self, entity: Entity) -> list[pygame.Rect]:
+    def _static_collision(self, obj: Entity | Projectile) -> list[pygame.Rect]:
         """Check entity collides with nearest wall"""
         collides: list[pygame.Rect] = list[pygame.Rect]()
         checks: list[str] = []
 
         # Check position relative to Y direction
-        if entity.position.y < self.SCREEN_CENTER[1]:
+        if obj.position.y < self.SCREEN_CENTER[1]:
             checks.append('N')
-        elif entity.position.y > self.SCREEN_CENTER[1]:
+        elif obj.position.y > self.SCREEN_CENTER[1]:
             checks.append('S')
         # Check position relative to X direction
-        if entity.position.x > self.SCREEN_CENTER[0]:
+        if obj.position.x > self.SCREEN_CENTER[0]:
             checks.append('E')
-        elif entity.position.x < self.SCREEN_CENTER[0]:
+        elif obj.position.x < self.SCREEN_CENTER[0]:
             checks.append('W')
 
         dungeon_walls: dict[str, list[pygame.Rect]] = self.get_room_hitboxes()
         for cardinal in checks:
             for segment, rec in enumerate(dungeon_walls[cardinal]):
-                if entity.rect.colliderect(rec):
-                    if segment == 1 and entity is self._player:
-                        print(f"door: {cardinal}")
+                if obj.rect.colliderect(rec):
+                    if segment == 1 and obj is self._player:
                         self.switch_room(cardinal)
-                        continue
+                        return []
                     collides.append(rec)
 
         return collides
@@ -500,7 +481,17 @@ class World:
 
     def item_action(self, item: Item, action: str,
                     projectile: Projectile | None = None) -> Any:
-        """FIXME"""
+        """
+        Get item action and projectiles.
+
+        Args:
+            item (Item): Item requesting action.
+            action (str): Action code.
+            projectile (Projectile | None, optional): Projectile passed. Defaults to None.
+
+        Returns:
+            Any: _description_
+        """
         if action == "grabbed":
             if pygame.sprite.collide_rect(item, self._player):
                 self._inventory.append(item)
@@ -511,6 +502,9 @@ class World:
                 if projectile and pygame.sprite.collide_rect(projectile, entity):
                     entity.damage(projectile.damage_points)
                     return True
+        if action == "s_col":
+            if projectile:
+                return self._static_collision(projectile)
         return 0
 
 # --- properties ---
@@ -571,6 +565,11 @@ class World:
 
         data['items']['slot'] = {
             'name': self._item_slot.__str__()
+        }
+
+        data['room'] = {
+            'current': self._curr_room,
+            'music': self._Music_IDs[self._curr_room.room_type]
         }
 
         return data

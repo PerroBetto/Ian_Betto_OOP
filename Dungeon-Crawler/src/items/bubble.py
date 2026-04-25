@@ -60,6 +60,8 @@ class BubbleWeapon(Item):
             bubble.loop(delta)
             if bubble.move_speed == 0:
                 self.kill_bubble(indx)
+            elif self._world.item_action(self, "s_col", bubble):
+                self.kill_bubble(indx)
             else:
                 if self._world.item_action(self, "attack", bubble):
                     self.kill_bubble(indx)

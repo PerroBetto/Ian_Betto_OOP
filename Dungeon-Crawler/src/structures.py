@@ -204,7 +204,7 @@ class Dungeon:
         if hasdoor and isopen:
             return [
                 pygame.Rect(80, 5, 585, 160),   # left segment
-                pygame.Rect(665, 5, 115, 160),   # door band
+                pygame.Rect(665, 5, 115, 60),   # door band
                 pygame.Rect(780, 5, 590, 160),  # right segment
             ]
         return [pygame.Rect(80, 5, 1290, 160)]
@@ -214,7 +214,7 @@ class Dungeon:
         if hasdoor and isopen:
             return [
                 pygame.Rect(80, 725, 555, 80),   # left segment
-                pygame.Rect(633, 725, 173, 80),   # narrow door band
+                pygame.Rect(633, 800, 173, 80),   # narrow door band
                 pygame.Rect(804, 725, 570, 80),  # right segment
             ]
         return [pygame.Rect(80, 725, 1290, 80)]
@@ -224,7 +224,7 @@ class Dungeon:
         if hasdoor and isopen:
             return [
                 pygame.Rect(1200, 5, 170, 370),    # top segment
-                pygame.Rect(1200, 375, 170, 110),   # door band
+                pygame.Rect(1300, 375, 170, 110),   # door band
                 pygame.Rect(1200, 485, 170, 320),  # bottom segment
             ]
         return [pygame.Rect(1200, 5, 170, 800)]
@@ -234,7 +234,7 @@ class Dungeon:
         if hasdoor and isopen:
             return [
                 pygame.Rect(80, 5, 164, 375),    # top segment
-                pygame.Rect(80, 380, 165, 110),   # door band
+                pygame.Rect(80, 380, 65, 110),   # door band
                 pygame.Rect(80, 490, 164, 315),  # bottom segment
             ]
         return [pygame.Rect(80, 5, 164, 800)]

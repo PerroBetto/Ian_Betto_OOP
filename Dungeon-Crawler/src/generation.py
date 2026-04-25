@@ -88,7 +88,7 @@ class Generation:
                             self.sel_img += "o_Boss.png"
                             self._store_wall(
                                 cur_room.x, cur_room.y, direction_check, True, False, self.sel_img)
-                            self._reset_sel_img
+                            self._reset_sel_img()
                             continue
                         self.sel_img += "/door/S_o.png"
                         self._store_wall(
