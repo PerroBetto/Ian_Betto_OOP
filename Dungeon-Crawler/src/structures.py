@@ -205,8 +205,8 @@ class Dungeon:
         Returns:
             Room: The farthest room from the starting room.
         """
-        visited: set = set()  # no duplicate items
-        queue: deque = deque([(start, 0)])
+        visited: set[Room] = set()  # no duplicate items
+        queue: deque[tuple[Room, int]] = deque([(start, 0)])
         farthest: tuple[Room, int] = (start, 0)
 
         while queue:

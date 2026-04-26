@@ -123,7 +123,7 @@ class SoundManager:
                 pygame.mixer.Channel(10).play(self._sounds[10], -1, fade_ms=fade_in)
             case 11:
                 # Puzzle_theme
-                pygame.mixer.Channel(11).play(self._sounds[11], -1, fade_ms = fade_in)
+                pygame.mixer.Channel(11).play(self._sounds[11], -1, fade_ms=fade_in)
             case 12:
                 # Enemy_theme
                 pygame.mixer.Channel(12).play(self._sounds[12], -1, fade_ms=fade_in)
@@ -153,10 +153,10 @@ class SoundManager:
         Enemy_theme_sound = self.load_audio(Enemy_theme_dir.__str__())
 
         # Main_theme_channel = pygame.mixer.Channel(9)
-        # # Future channels needed:
-        Boss_theme_channel = pygame.mixer.Channel(10)
-        Puzzle_theme_channel = pygame.mixer.Channel(11)
-        Enemy_theme_channel = pygame.mixer.Channel(12)
+        # # # Future channels needed:
+        # Boss_theme_channel = pygame.mixer.Channel(10)
+        # Puzzle_theme_channel = pygame.mixer.Channel(11)
+        # Enemy_theme_channel = pygame.mixer.Channel(12)
 
         for sound in [Main_theme_sound, Boss_theme_sound, Enemy_theme_sound, Puzzle_theme_sound]:
             self._sounds.append(sound)
