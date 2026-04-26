@@ -49,6 +49,20 @@ class Urchin(Entity):
         super().__init__(world, position, speed, clamp_speed, friction,
                          HP, image=self._assets["M0"], assets=self._assets)
 
+    def _sound_init(self) -> None:
+        self._sounds['hurt'] = 6
+        self._sounds['move'] = 3
+        self._sounds['death'] = 1
+
+# ==== properties ====
+
+    def damage(self, dmg: int) -> None:
+        if self._invincibility <= 0:
+            self.play_sound('hurt')
+        super().damage(dmg)
+        if self.HP <= 0:
+            self.play_sound('death')
+
 # ==== base methods ====
 
     def loop(self, delta: float, move: Vector2 | None = None) -> None:
@@ -78,27 +92,11 @@ class Urchin(Entity):
         Set target position.
         """
         # check if we are moving
-        if len(self._directions):
-            if self._world.entity_action(self, "s_col"):
-                self._directions.pop(0)
-                self._target_pos.pop(0)
-                self._move_timer = self._MOVE_INTERVAL
-            elif self._directions[0][0] == 0:
-                # check bounds
-                # check if we have passed the target in the y direction
-                if self.__check_y_bounds() or self.__check_y_target():
-                    self._directions.pop(0)
-                    self._target_pos.pop(0)
-                    self._move_timer = self._MOVE_INTERVAL
-            elif self._directions[0][1] == 0:
-                # check bounds
-                # check if we have passed the target in the x direction
-                if self.__check_x_bounds() or self.__check_x_target():
-                    self._directions.pop(0)
-                    self._target_pos.pop(0)
-                    self._move_timer = self._MOVE_INTERVAL
+        self.__check_all_potential()
 
         if len(self._directions) and self._move_timer <= 0:
+            if self.move_speed == 0:
+                self.play_sound('move')
             return Vector2(self._directions[0][0], self._directions[0][1])
 
         # Not moving:
@@ -128,6 +126,27 @@ class Urchin(Entity):
     def urchin_attack(self) -> None:
         if self._world.entity_action(self, "player_col"):
             self._world.entity_action(self, "player_dmg_2")
+
+    def __check_all_potential(self) -> None:
+        if len(self._directions):
+            if self._world.entity_action(self, "s_col"):
+                self._directions.pop(0)
+                self._target_pos.pop(0)
+                self._move_timer = self._MOVE_INTERVAL
+            elif self._directions[0][0] == 0:
+                # check bounds
+                # check if we have passed the target in the y direction
+                if self.__check_y_bounds() or self.__check_y_target():
+                    self._directions.pop(0)
+                    self._target_pos.pop(0)
+                    self._move_timer = self._MOVE_INTERVAL
+            elif self._directions[0][1] == 0:
+                # check bounds
+                # check if we have passed the target in the x direction
+                if self.__check_x_bounds() or self.__check_x_target():
+                    self._directions.pop(0)
+                    self._target_pos.pop(0)
+                    self._move_timer = self._MOVE_INTERVAL
 
     def __check_y_target(self) -> bool:
         if self._directions[0][1] > 0:
