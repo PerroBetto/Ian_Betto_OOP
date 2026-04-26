@@ -40,7 +40,21 @@ class Jelly(Entity):
                          position=position, assets=self._assets, image=self._assets["M1"],
                          HP=HP)
 
-# ---- base ----
+    def _sound_init(self) -> None:
+        self._sounds['hurt'] = 6
+        self._sounds['move'] = 6
+        self._sounds['death'] = 1
+
+# ==== properties ====
+
+    def damage(self, dmg: int) -> None:
+        if self._invincibility <= 0:
+            self.play_sound('hurt')
+        super().damage(dmg)
+        if self.HP <= 0:
+            self.play_sound('death')
+
+# ==== base methods ====
 
     def loop(self, delta: float, move: Vector2 | None = None) -> None:
         self.jelly_attack()
@@ -87,6 +101,7 @@ class Jelly(Entity):
             # reached zero.
             self._move_timer -= delta
             if self._move_timer <= 0.0:
+                self.play_sound('move')
                 self._move_timer = self._MOVE_INTERVAL
                 vector_ret = Vector2(direction.x, direction.y)
 

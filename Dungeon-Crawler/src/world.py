@@ -120,7 +120,8 @@ class World:
 
         > the starting room. All regular values should be set.
         """
-        self._player: Player = Player(self, position=pygame.Vector2(400, 255))
+        self._player: Player = Player(self, position=pygame.Vector2(
+            self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]))
 
     def _ui_init(self) -> None:  # FIXME
         """

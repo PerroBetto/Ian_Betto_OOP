@@ -145,7 +145,6 @@ class SoundManager:
         Puzzle_theme_dir: Path = (MUSIC_DIR / "Puzzle_theme.mp3")
         Enemy_theme_dir: Path = (MUSIC_DIR / "Enemy_theme.mp3")
 
-
         Main_theme_sound = self.load_audio(Main_theme_dir.__str__())
         Boss_theme_sound = self.load_audio(Boss_theme_dir.__str__())
         Puzzle_theme_sound = self.load_audio(Puzzle_theme_dir.__str__())

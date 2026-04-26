@@ -43,6 +43,20 @@ class Coral(Entity):
         super().__init__(world, position, speed, clamp_speed, HP=HP,
                          image=self._assets["C0"], assets=self._assets)
 
+    def _sound_init(self) -> None:
+        self._sounds['hurt'] = 6
+        self._sounds['shoot'] = 2
+        self._sounds['death'] = 1
+
+# ==== properties ====
+
+    def damage(self, dmg: int) -> None:
+        if self._invincibility <= 0:
+            self.play_sound('hurt')
+        super().damage(dmg)
+        if self.HP <= 0:
+            self.play_sound('death')
+
 # ==== base methods ====
 
     def loop(self, delta: float, move: Vector2 | None = None) -> None:
@@ -77,6 +91,7 @@ class Coral(Entity):
         self._shot_timer -= delta
 
         if self._shot_timer < 0:
+            self.play_sound('shoot')
             # get player position and difference
             player: Vector2 = self._world.entity_action(self, "player_pos")
             diff: Vector2 = Vector2(player.x - self._position.x, player.y - self._position.y)
