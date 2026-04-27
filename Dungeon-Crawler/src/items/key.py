@@ -43,7 +43,7 @@ class KeyFragment(Item):
             "../../assets/visual/items/key/key_fragment.png"
         key_fragment_sheet = pygame.image.load(key_fragment_path)
         super().__init__(world, position,
-                         image=self._single_from_sheet(key_fragment_sheet, (10, 10)))
+                         image=self._single_from_sheet(key_fragment_sheet, (16, 16)))
 
     def _sound_init(self) -> None:
         """Key Fragment Sounds."""
