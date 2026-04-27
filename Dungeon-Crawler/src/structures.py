@@ -25,13 +25,20 @@ class Room:
     """
     Room class for handling cords, used by Dungeon class
     """
+    ROOM_BOUNDS: dict[str, tuple[int, int]] = {
+        'X': (284, 1160),
+        'Y': (205, 685)
+    }
+
     __slots__ = ["_world",
                  "_x",
                  "_y",
                  "_rng",
                  "_room_type",
                  "_connections",
-                 "_enemies"]
+                 "_enemies",
+                 "_puzzle_enemy_pattern",
+                 "_current_pattern"]
 
     def __init__(self, world: Any,
                  x: int, y: int,
@@ -44,6 +51,21 @@ class Room:
         self._room_type: str = room_type
         self._connections: list[Self] = []
         self._enemies: list[Entity] = []
+        self._puzzle_enemy_pattern: list[list[dict[str, Any]]] = []
+        self._current_pattern: int = 0
+
+    def init_puzzle_patterns(self) -> None:
+        """
+        Initialize the enemy pattern for a puzzle room.
+
+        Each pattern consists of a string of dicts that represent
+        the enemies.
+        """
+        # Each puzzle room consists of three patterns.
+
+        for i in range(3):
+            self._puzzle_enemy_pattern.append(
+                self._rng.choice(PuzzlePatterns.ALL_PATTERNS))
 
     def init_enemies(self) -> None:
         """
@@ -54,10 +76,6 @@ class Room:
         """
         enemy_types: list[str] = [
             "Jelly", "Jelly", "Urchin", "Coral", "Coral"]
-        room_bounds: dict[str, tuple[int, int]] = {
-            'X': (284, 1160),
-            'Y': (205, 685)
-        }
 
         enemy_count = self._rng.randint(1, 5)
 
@@ -65,18 +83,15 @@ class Room:
             # get randomized values
             enemy = self._rng.choice(enemy_types)
             position: pygame.Vector2 = pygame.Vector2(
-                self._rng.randint(room_bounds['X'][0], room_bounds['X'][1]),
-                self._rng.randint(room_bounds['Y'][0], room_bounds['Y'][1])
+                self._rng.randint(self.ROOM_BOUNDS['X'][0], self.ROOM_BOUNDS['X'][1]),
+                self._rng.randint(self.ROOM_BOUNDS['Y'][0], self.ROOM_BOUNDS['Y'][1])
             )
             # store enemy
-            if enemy == "Jelly":
-                self._enemies.append(Jelly(self._world, position))
-            elif enemy == "Urchin":
+            if enemy == "Urchin":
                 position.x = pygame.math.clamp(position.x, 325, 1119)
                 position.y = pygame.math.clamp(position.y, 246, 644)
-                self._enemies.append(Urchin(self._world, room_bounds, position))
-            else:
-                self._enemies.append(Coral(self._world, position))
+
+            self.create_enemy(enemy, position)
 
 # ==== properties ====
 
@@ -110,6 +125,46 @@ class Room:
         return self._enemies
 
 # ==== Room methods ====
+
+    def update_puzzle(self) -> bool:
+        """
+        Updates the room if it is a puzzle room.
+
+        Returns:
+            bool: Room state. False == not finished, True == finished.
+        """
+        # check if enemies are alive
+        if len(self._enemies):
+            return False
+
+        # check enemy patterns
+        if self._current_pattern >= len(self._puzzle_enemy_pattern):
+            return True
+
+        # pop next pattern
+        print("pop next pattern")
+        next_pattern = self._puzzle_enemy_pattern[self._current_pattern]
+        self._current_pattern += 1
+        for enemy in next_pattern:
+            self.create_enemy(enemy['name'], enemy['position'])
+
+        return False
+
+    def create_enemy(self, type: str, position: pygame.Vector2) -> None:
+        """
+        Create a new enemy in this room.
+
+        Args:
+            type (str): Enemy type name.
+            position (pygame.Vector2): Enemy position.
+        """
+
+        if type == "Jelly":
+            self._enemies.append(Jelly(self._world, position))
+        elif type == "Urchin":
+            self._enemies.append(Urchin(self._world, self.ROOM_BOUNDS, position))
+        else:
+            self._enemies.append(Coral(self._world, position))
 
     def connect(self, other_room: Self) -> None:
         """Creates a bidirectional connection."""
@@ -247,6 +302,7 @@ class Dungeon:
 
         for room in puzzle_rooms:
             room.room_type = "puzzle"
+            room.init_puzzle_patterns()
 
         # Assign enemy rooms to remaining empty rooms
         for room in remaining:
@@ -430,3 +486,30 @@ class Dungeon:
                 pygame.Rect(80, 490, 164, 315),  # bottom segment
             ]
         return [pygame.Rect(80, 5, 164, 800)]
+
+
+class PuzzlePatterns:
+    """Patterns for enemies in the puzzle room."""
+
+    DOUBLE_URCHIN = [
+        {'name': 'Urchin', 'position': pygame.Vector2(325, 246)},
+        {'name': 'Urchin', 'position': pygame.Vector2(1119, 644)}
+    ]
+
+    JELLIES = [
+        {'name': 'Jelly', 'position': pygame.Vector2(727, 235)},
+        {'name': 'Jelly', 'position': pygame.Vector2(727, 658)},
+        {'name': 'Jelly', 'position': pygame.Vector2(983, 582)},
+        {'name': 'Jelly', 'position': pygame.Vector2(445, 582)},
+        {'name': 'Jelly', 'position': pygame.Vector2(445, 294)},
+        {'name': 'Jelly', 'position': pygame.Vector2(983, 294)}
+    ]
+
+    TURRETS = [
+        {'name': 'Coral', 'position': pygame.Vector2(284, 205)},
+        {'name': 'Coral', 'position': pygame.Vector2(1160, 205)},
+        {'name': 'Coral', 'position': pygame.Vector2(284, 685)},
+        {'name': 'Coral', 'position': pygame.Vector2(1160, 685)}
+    ]
+
+    ALL_PATTERNS = [DOUBLE_URCHIN, JELLIES, TURRETS]

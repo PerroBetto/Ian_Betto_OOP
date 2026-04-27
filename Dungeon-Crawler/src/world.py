@@ -94,7 +94,8 @@ class World:
             "start": 9,
             "boss": 10,
             "enemy": 11,
-            "puzzle": 12
+            "puzzle": 12,
+            "puzzle_clear": 9
         }
 
     def _dungeon_init(self, seed: Any) -> None:
@@ -295,6 +296,10 @@ class World:
 
         > door unlocks, etc.
         """
+        if self._curr_room.room_type == "puzzle":
+            if self._curr_room.update_puzzle():
+                self._curr_room.room_type = "puzzle_clear"
+                self._dungeon.set_all_doors_in_room(self._curr_room, True)
 
         # handle transition
         if self._transition_state:
@@ -322,7 +327,6 @@ class World:
         directions = ["W", "N", "E", "S"]
         for d in directions:
             img_directory = self._dungeon._generation.room_walls.get((x, y, d))
-            print(img_directory)
             if img_directory:
                 wall_img: pygame.Surface = pygame.image.load(
                     img_directory['sel_img'].__str__()).convert_alpha()
@@ -382,6 +386,13 @@ class World:
             self._curr_room = self._dungeon.rooms[next_room]
         except KeyError:
             raise KeyError("room doesnt exist")
+
+        if self._curr_room.room_type == "puzzle":
+            self._player.position = pygame.Vector2(
+                self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
+            )
+            self._dungeon.set_all_doors_in_room(self._curr_room, False)
+            return
 
         # teleport player to appropriate position
         self._player.position = pygame.Vector2(
