@@ -24,7 +24,8 @@ class UI:
     __slots__ = ["_assets",  # dict[str, Surface]
                  "_inventory",  # list[tuple[Surface, Rect]]
                  "_hearts",  # list[list[Any]]
-                 "_player_hp"]  # int (player health)
+                 "_player_hp",  # int (player health)
+                 "_victory"]  # bool (victory state)
 # ==== inits ====
 
     def __init__(self) -> None:
@@ -35,6 +36,7 @@ class UI:
         self.__init_item_slot()
         self.__init_hearts()
         self.__init_gameover()
+        self.__init_victory()
 
     def __init_item_slot(self) -> None:
         """Initializes the item slot for rendering."""
@@ -67,6 +69,14 @@ class UI:
         # Retrieve and store game over image
         self._store_ui_element('gameover', gameover_sheet, (0, 0), (160, 64))
 
+    def __init_victory(self) -> None:
+        """Initialize asset for victory"""
+        self._victory: bool = False
+        path: Path = Path(__file__).parent / \
+            "../assets/visual/ui/gameover.png"
+        victory_sheet: Surface = pygame.image.load(path)
+        # Retrieve and store game over image
+        self._store_ui_element('victory', victory_sheet, (0, 0), (160, 64))
 # ==== base ====
 
     def render(self) -> list[tuple[Surface, Rect]]:
@@ -97,6 +107,12 @@ class UI:
             gameover_rect.topleft = (64 * self._SCALE, 32 * self._SCALE)
             temp.append((self._assets['gameover'], gameover_rect))
 
+        # display victory
+        if self._victory:
+            victory_rect: Rect = self._assets['victory'].get_rect()
+            victory_rect.topleft = (64 * self._SCALE, 32 * self._SCALE)
+            temp.append((self._assets['victory'], victory_rect))
+
         return temp
 
 # ==== UI methods ====
@@ -124,6 +140,10 @@ class UI:
         self._inventory = items
         for i, _item in enumerate(self._inventory):
             self._inventory[i][1].topleft = (272 * self._SCALE, (i*16*self._SCALE))
+
+    def update_victory(self, victory: bool) -> None:
+        """Updates to show victory"""
+        self._victory = victory
 
 # ==== get image from file ====
 

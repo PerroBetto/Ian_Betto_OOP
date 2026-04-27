@@ -19,6 +19,20 @@ class Key(Item):
 
     A key is used to open the boss door in the dungeon.
     """
+    def __init__(self, world: Any) -> None:
+        """
+        Key class item
+
+        When four fragments are collected, is stored in inventory.
+
+        Args:
+            world (Any): world this item belongs to.
+        """
+        key_path = Path(__file__).parent / \
+            "../../assets/visual/items/key/key.png"
+        key_sheet = pygame.image.load(key_path)
+        super().__init__(world, state=Item.COLLECTED,
+                         image=self._single_from_sheet(key_sheet, (16, 16)))
 
 
 class KeyFragment(Item):
@@ -31,9 +45,9 @@ class KeyFragment(Item):
     def __init__(self, world: Any,
                  position: Vector2) -> None:
         """
-        Heart class item.
+        Key fragment class item.
 
-        Heals the player when touched.
+        Stored in inventory when touched.
 
         Args:
             world (Any): World this item belongs to.

@@ -24,6 +24,7 @@ from sound import SoundManager
 from entities.entity_mod import Entity
 from entities.player import Player
 from items.item import Item
+from items.key import Key
 from structures import Dungeon, Room
 from items.projectile import Projectile
 from items.bubble import BubbleWeapon
@@ -56,7 +57,8 @@ class World:
                  , "_curr_room"  # : Room
                  , "_prev_room"  # : Room
                  , "_room_transition"  # : float // transition timer
-                 , "_transition_state"]  # : int // 1 = up, -1 = down, 0 = none
+                 , "_transition_state"  # : int // 1 = up, -1 = down, 0 = none
+                 , "_victory"]  # : bool // set if you beat the boss or not
 
 # --- initializers ---
 
@@ -83,6 +85,7 @@ class World:
         self._dungeon_init(seed)
         self._room_transition: float = 0
         self._transition_state: int = 0
+        self._victory: bool = False
 
         # inialize sounds
         self._sounds: list[int] = list[int]()
@@ -162,6 +165,10 @@ class World:
         # Stop game if player health is zero
         if self._player.HP <= 0:
             self._player.position = pygame.Vector2(-999, -999)
+            return
+
+        if self._victory:
+            self._ui.update_victory(self._victory)
             return
 
         self._time += delta
@@ -290,36 +297,52 @@ class World:
         > door unlocks, etc.
         """
         # puzzle room
-        if self._curr_room.room_type == "puzzle":
-            # get puzzle room state
-            puzzle_room_state = self._curr_room.puzzle_state
+        match self._curr_room.room_type:
+            case "puzzle":
+                # get puzzle room state
+                puzzle_room_state = self._curr_room.puzzle_state
 
-            if puzzle_room_state == 2:
-                self._sound_manager.play_audio(0)
-                self._curr_room.room_type = "start"
-                self._curr_room.create_item('keyfragment', pygame.Vector2(
-                    self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
-                ))
-                self._dungeon.set_all_doors_in_room(self._curr_room, True, False)
+                # Puzzle room beat!
+                if puzzle_room_state == 2:
+                    self._curr_room.room_type = "start"
+                    self._curr_room.create_item('keyfragment', pygame.Vector2(
+                        self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
+                    ))
+                    self._dungeon.set_all_doors_in_room(self._curr_room, True, False)
 
-            elif puzzle_room_state == 1 and not self._transition_state:
-                self._transition_state = 1
+                # transition when all enemies beat
+                elif puzzle_room_state == 1 and not self._transition_state:
+                    self._transition_state = 1
 
-            elif puzzle_room_state == 1 and self._room_transition >= 1:
-                self._player.position = pygame.Vector2(
-                    self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
-                )
-                self._curr_room.create_item('heart', pygame.Vector2(
-                    self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
-                ))
-                self._curr_room.update_puzzle()
+                # set next enemies, place player at center
+                elif puzzle_room_state == 1 and self._room_transition >= 1:
+                    self._player.position = pygame.Vector2(
+                        self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
+                    )
+                    self._curr_room.create_item('heart', pygame.Vector2(
+                        self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
+                    ))
+                    self._curr_room.update_puzzle()
 
-        elif self._curr_room.room_type == "enemy":
-            if not self._curr_room.enemies and not self._curr_room.room_clear:
-                self._curr_room.create_item('heart', pygame.Vector2(
-                    self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
-                ))
-                self._curr_room.room_clear = True
+            # place a heart in center of room when all enemies beat in
+            # an enemy room
+            case "enemy":
+                if not self._curr_room.enemies and not self._curr_room.room_clear:
+                    self._curr_room.create_item('heart', pygame.Vector2(
+                        self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
+                    ))
+                    self._curr_room.room_clear = True
+
+            case "boss":
+                # check that the boss is defeated
+                if not self._curr_room.enemies:
+                    self._victory = True
+                    self._curr_room.room_type = "start"
+
+        # check if the player has the key to open the boss door
+        if self._inventory and isinstance(self._inventory[0], Key):
+            if self._curr_room.room_type != "boss":
+                self._dungeon.set_boss_door_in_room(self._curr_room, True)
 
         # handle transition
         if self._transition_state:
@@ -347,6 +370,7 @@ class World:
         directions = ["W", "N", "E", "S"]
         for d in directions:
             img_directory = self._dungeon._generation.room_walls.get((x, y, d))
+            # print(img_directory)
             if img_directory:
                 wall_img: pygame.Surface = pygame.image.load(
                     img_directory['sel_img'].__str__()).convert_alpha()
@@ -393,27 +417,34 @@ class World:
         }
 
         next_room: tuple[int, int] = (0, 0)
-        if cardinal == 'S':  # going through south door
-            next_room = (self._curr_room.x, self._curr_room.y - 1)
-        elif cardinal == 'N':  # going through north door
-            next_room = (self._curr_room.x, self._curr_room.y + 1)
-        elif cardinal == 'E':  # going through east door
-            next_room = (self._curr_room.x + 1, self._curr_room.y)
-        elif cardinal == 'W':  # going through west door
-            next_room = (self._curr_room.x - 1, self._curr_room.y)
+        match cardinal:
+            case 'S':  # going through south door
+                next_room = (self._curr_room.x, self._curr_room.y - 1)
+            case'N':  # going through north door
+                next_room = (self._curr_room.x, self._curr_room.y + 1)
+            case 'E':  # going through east door
+                next_room = (self._curr_room.x + 1, self._curr_room.y)
+            case 'W':  # going through west door
+                next_room = (self._curr_room.x - 1, self._curr_room.y)
 
         try:
             self._curr_room = self._dungeon.rooms[next_room]
         except KeyError:
             raise KeyError("room doesnt exist")
 
-        if self._curr_room.room_type == "puzzle":
-            self._player.position = pygame.Vector2(
-                self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
-            )
-            self._dungeon.set_all_doors_in_room(self._curr_room, False, False)
-            return
-
+        match self._curr_room.room_type:
+            case"puzzle":
+                self._player.position = pygame.Vector2(
+                    self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
+                )
+                self._dungeon.set_all_doors_in_room(self._curr_room, False, False)
+                return
+            case "boss":
+                self._player.position = pygame.Vector2(
+                    self.SCREEN_CENTER[0] - 300, self.SCREEN_CENTER[1]
+                )
+                self._dungeon.set_all_doors_in_room(self._curr_room, False, True)
+                return
         # teleport player to appropriate position
         self._player.position = pygame.Vector2(
             position_tp[cardinal][0],
@@ -557,6 +588,12 @@ class World:
                 if pygame.sprite.collide_rect(item, self._player):
                     self._inventory.append(item)
                     self._curr_room.items.remove(item)
+
+                    # check if we have four fragments
+                    if len(self._inventory) == 4:
+                        self._inventory.clear()
+                        self._inventory.append(Key(self))
+
                     return None
             case "use":
                 self._curr_room.items.remove(item)

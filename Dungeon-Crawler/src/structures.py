@@ -416,19 +416,6 @@ class Dungeon:
         for cardinal in orientations:
             self.set_wall_door(room, cardinal, state, boss)
 
-    def switch_all_doors_in_room(self, room: Room, boss: bool) -> None:
-        """
-        Switches the state of all the walls in a room.
-
-        Args:
-            room (Room): room to switch walls.
-            boss (bool): Whether to open boss door or not.
-        """
-        orientations: list[str] = ['N', 'E', 'S', 'W']
-
-        for cardinal in orientations:
-            self.switch_wall_door_state(room, cardinal, boss)
-
     def set_wall_door(self, room: Room, orientation: str, state: bool, boss: bool) -> None:
         """
         Set the wall corresponding to the room and orientation.
@@ -444,18 +431,31 @@ class Dungeon:
         if wall_data is None:
             raise ValueError()
         # get wall attributes.
-        hasdoor = wall_data['hasdoor']
         isopen = wall_data['isopen']
-
-        # early return
-        if not hasdoor:
-            return
 
         # open door if the door is closed.
         if state and not isopen:
             self.switch_wall_door_state(room, orientation, boss)
         elif not state and isopen:
             self.switch_wall_door_state(room, orientation, boss)
+
+    def set_boss_door_in_room(self, room: Room, state: bool) -> None:
+        """
+        Sets the boss door wall to a specific state
+
+        Args:
+            room (Room): Room the wall belongs to
+            state (bool): The state to switch the wall to.
+                A true = open, a false = closed.
+        """
+        orientations: list[str] = ['N', 'E', 'S', 'W']
+
+        for cardinal in orientations:
+            wall_data = self._generation.room_walls.get((room.x, room.y, cardinal))
+            if wall_data is None:
+                raise ValueError()
+            if wall_data['wall_type'].__str__() == "Boss":
+                self.set_wall_door(room, cardinal, state, True)
 
     def switch_wall_door_state(self, room: Room, orientation: str, boss: bool) -> None:
         """

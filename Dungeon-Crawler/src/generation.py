@@ -121,7 +121,7 @@ class Generation:
                     elif cur_room.room_type == "boss":
                         self.sel_img += "/boss/"
                         self.Sel_ori(direction_check)
-                        self.sel_img += "o_Boss.png"
+                        self.sel_img += "x_Boss.png"
                         self._store_wall(
                             cur_room.x, cur_room.y, direction_check,
                             True, False, "Boss", self.sel_img)
