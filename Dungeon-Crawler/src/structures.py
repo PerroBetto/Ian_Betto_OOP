@@ -14,11 +14,15 @@ try:
     from .entities.jelly import Jelly
     from .entities.urchin import Urchin
     from .entities.coral import Coral
+    from .items.item import Item
+    from .items.heart import Heart
 except ImportError:
     from entities.entity_mod import Entity
     from entities.jelly import Jelly
     from entities.urchin import Urchin
     from entities.coral import Coral
+    from items.item import Item
+    from items.heart import Heart
 
 
 class Room:
@@ -36,9 +40,11 @@ class Room:
                  "_rng",
                  "_room_type",
                  "_connections",
+                 "_items",
                  "_enemies",
                  "_puzzle_enemy_pattern",
-                 "_current_pattern"]
+                 "_current_pattern",
+                 "_room_clear"]
 
     def __init__(self, world: Any,
                  x: int, y: int,
@@ -50,9 +56,11 @@ class Room:
         self._rng: random.Random = rng
         self._room_type: str = room_type
         self._connections: list[Self] = []
+        self._items: list[Item] = []
         self._enemies: list[Entity] = []
         self._puzzle_enemy_pattern: list[list[dict[str, Any]]] = []
         self._current_pattern: int = 0
+        self._room_clear: bool = False
 
     def init_puzzle_patterns(self) -> None:
         """
@@ -122,9 +130,23 @@ class Room:
         return self._connections
 
     @property
+    def items(self) -> list[Item]:
+        """items in this room"""
+        return self._items
+
+    @property
     def enemies(self) -> list[Entity]:
         """enemies in this room"""
         return self._enemies
+
+    @property
+    def room_clear(self) -> bool:
+        """return if room is clear"""
+        return self._room_clear
+
+    @room_clear.setter
+    def room_clear(self, other: bool) -> None:
+        self._room_clear = other
 
     @property
     def puzzle_state(self) -> int:
@@ -163,7 +185,7 @@ class Room:
 
         return
 
-    def create_enemy(self, type: str, position: pygame.Vector2) -> None:
+    def create_enemy(self, enemy_type: str, position: pygame.Vector2) -> None:
         """
         Create a new enemy in this room.
 
@@ -172,12 +194,24 @@ class Room:
             position (pygame.Vector2): Enemy position.
         """
 
-        if type == "Jelly":
+        if enemy_type == "Jelly":
             self._enemies.append(Jelly(self._world, position))
-        elif type == "Urchin":
+        elif enemy_type == "Urchin":
             self._enemies.append(Urchin(self._world, self.ROOM_BOUNDS, position))
         else:
             self._enemies.append(Coral(self._world, position))
+
+    def create_item(self, item_type: str, position: pygame.Vector2) -> None:
+        """
+        Create a new item in this room.
+
+        Args:
+            type (str): Item type name.
+            position (pygame.Vector2): Item position.
+        """
+        match item_type:
+            case 'heart':
+                self._items.append(Heart(self._world, position))
 
     def connect(self, other_room: Self) -> None:
         """Creates a bidirectional connection."""

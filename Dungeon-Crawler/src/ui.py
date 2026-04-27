@@ -90,7 +90,6 @@ class UI:
         # append iventory items to display
         for item in self._inventory:
             temp.append((item[0], item[1]))
-            print(item[1])
 
         # display game over
         if self._player_hp <= 0:

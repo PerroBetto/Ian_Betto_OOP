@@ -11,7 +11,7 @@ a stepping stone for other items to be created.
 from pathlib import Path
 from typing import Any
 
-# import pygame
+import pygame
 from pygame import Vector2, sprite, Surface, Rect
 
 
@@ -219,3 +219,14 @@ class Item(sprite.Sprite):
     def play_sound(self, sound_key: str) -> None:
         """FIXME"""
         self._world.queue_sound(self._sounds[sound_key])
+
+# ==== get image from file ====
+
+    def _single_from_sheet(self, image: Surface,
+                           dimension: tuple[int, int]) -> Surface:
+        """FIXME"""
+        single: Surface = Surface(dimension).convert_alpha()
+        single.blit(image, (0, 0), (0, 0, dimension[0], dimension[1]))
+        single = pygame.transform.scale(single, (dimension[0] * self._SCALE,
+                                                 dimension[1] * self._SCALE))
+        return single

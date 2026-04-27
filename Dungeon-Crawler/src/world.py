@@ -24,7 +24,6 @@ from sound import SoundManager
 from entities.entity_mod import Entity
 from entities.player import Player
 from items.item import Item
-from items.heart import Heart
 from structures import Dungeon, Room
 from items.projectile import Projectile
 from items.bubble import BubbleWeapon
@@ -49,7 +48,6 @@ class World:
                  , "_Music_IDs"  # : dict[str, int] // string representation of music
                  , "_prev_room_type"
                  , "_player"  # : Player
-                 , "_items"  # Item // items in the room
                  , "_item_slot"  # : Item // item to be used with player action
                  , "_inventory"  # : list[Item]
                  , "_ui"  # : UI
@@ -95,8 +93,7 @@ class World:
             "start": 9,
             "boss": 10,
             "enemy": 11,
-            "puzzle": 12,
-            "puzzle_clear": 9
+            "puzzle": 12
         }
 
     def _dungeon_init(self, seed: Any) -> None:
@@ -144,11 +141,6 @@ class World:
 
         > Inventory and grounded items should be empty.
         """
-        self._items: list[Item] = list[Item]()
-        self._items = [
-            Heart(self, position=pygame.Vector2(800, 600)),
-            Item(self, position=pygame.Vector2(304, 564))
-            ]
         self._item_slot : Item = BubbleWeapon(self)
         self._inventory : list[Item] = list[Item]()
 
@@ -180,9 +172,9 @@ class World:
             if entity.HP <= 0:
                 self._curr_room.enemies.pop(indx)
 
-        if len(self._items):
-            for indx, _item in enumerate(self._items):
-                self._items[indx].loop(delta)
+        if len(self._curr_room.items):
+            for item in self._curr_room.items:
+                item.loop(delta)
 
         self._item_slot.loop(delta)
 
@@ -218,9 +210,9 @@ class World:
             for entity_item in entity.render(self._time):
                 temp.append(entity_item)
 
-        if len(self._items):
-            for indx, _item in enumerate(self._items):
-                temp.append(self._items[indx].render())
+        if len(self._curr_room.items):
+            for item in self._curr_room.items:
+                temp.append(item.render())
 
         for proj in self._item_slot.render_projectiles():
             temp.append(proj)
@@ -297,12 +289,13 @@ class World:
 
         > door unlocks, etc.
         """
+        # puzzle room
         if self._curr_room.room_type == "puzzle":
             # get puzzle room state
             puzzle_room_state = self._curr_room.puzzle_state
             if puzzle_room_state == 2:
                 self._sound_manager.play_audio(0)
-                self._curr_room.room_type = "enemy"
+                self._curr_room.room_type = "start"
                 self._dungeon.set_all_doors_in_room(self._curr_room, True, False)
             elif puzzle_room_state == 1 and not self._transition_state:
                 self._transition_state = 1
@@ -311,6 +304,12 @@ class World:
                     self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
                 )
                 self._curr_room.update_puzzle()
+        elif self._curr_room.room_type == "enemy":
+            if not self._curr_room.enemies and not self._curr_room.room_clear:
+                self._curr_room.create_item('heart', pygame.Vector2(
+                    self.SCREEN_CENTER[0], self.SCREEN_CENTER[1]
+                ))
+                self._curr_room.room_clear = True
 
         # handle transition
         if self._transition_state:
@@ -547,10 +546,10 @@ class World:
             case "store":
                 if pygame.sprite.collide_rect(item, self._player):
                     self._inventory.append(item)
-                    self._items.remove(item)
+                    self._curr_room.items.remove(item)
                     return None
             case "use":
-                self._items.remove(item)
+                self._curr_room.items.remove(item)
             case "heal_1":
                 self._player.HP += 1
             case "attack":
@@ -601,7 +600,7 @@ class World:
         data['items'] = {}
 
         grounded_items: list[dict[str, Any]] = list[dict[str, Any]]()
-        for item in self._items:
+        for item in self._curr_room.items:
             grounded_items.append(
                 {
                     'name': item.__str__(),

@@ -4,7 +4,8 @@ heart item module.
 from pathlib import Path
 from typing import Any
 
-from pygame import Vector2, sprite, Surface, Rect
+import pygame
+from pygame import Vector2
 
 try:
     from .item import Item
@@ -31,7 +32,11 @@ class Heart(Item):
             world (Any): World this item belongs to.
             position (Vector2): Position of this item.
         """
-        super().__init__(world, position)
+        heart_path = Path(__file__).parent / \
+            "../../assets/visual/items/heart/heart.png"
+        heart_sheet = pygame.image.load(heart_path)
+        super().__init__(world, position,
+                         image=self._single_from_sheet(heart_sheet, (10, 10)))
 
     def _sound_init(self) -> None:
         """Heart sounds."""
@@ -41,6 +46,8 @@ class Heart(Item):
 
     def check_player_touched(self) -> None:
         if self._world.item_action(self, "grabbed"):
+            if self._world._player.HP >= 10:
+                return
             self._world.item_action(self, "heal_1")
             self.play_sound('heal')
             self._world.item_action(self, "use")
