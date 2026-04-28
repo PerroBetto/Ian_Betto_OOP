@@ -31,7 +31,7 @@ class Urchin(Entity):
                  speed: float = 50,
                  clamp_speed: float = 500,
                  friction: float = 25,
-                 HP: int = 5) -> None:
+                 HP: int = 4) -> None:
         """Urchins are enemies that move in a single direction at a time."""
         # intialize variables
         self._bounds: dict[str, tuple[int, int]] = bounds
@@ -108,6 +108,11 @@ class Urchin(Entity):
             player: Vector2 = self._world.entity_action(self, "player_pos")
             diff: Vector2 = Vector2(player.x - self._position.x, player.y - self._position.y)
             abs_diff: tuple[float, float] = (abs(diff.x), abs(diff.y))
+
+            if diff.x == 0:
+                diff.x = 0.0001
+            if diff.y == 0:
+                diff.y = 0.0001
 
             # Set diff and targets
             if abs_diff[0] > abs_diff[1]:

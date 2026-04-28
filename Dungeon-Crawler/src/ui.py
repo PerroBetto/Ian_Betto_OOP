@@ -73,7 +73,7 @@ class UI:
         """Initialize asset for victory"""
         self._victory: bool = False
         path: Path = Path(__file__).parent / \
-            "../assets/visual/ui/gameover.png"
+            "../assets/visual/ui/victory.png"
         victory_sheet: Surface = pygame.image.load(path)
         # Retrieve and store game over image
         self._store_ui_element('victory', victory_sheet, (0, 0), (160, 64))

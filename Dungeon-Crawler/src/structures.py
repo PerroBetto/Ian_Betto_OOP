@@ -183,7 +183,6 @@ class Room:
             return
 
         # pop next pattern
-        print("pop next pattern")
         next_pattern = self._puzzle_enemy_pattern[self._current_pattern]
         self._current_pattern += 1
         for enemy in next_pattern:
@@ -506,6 +505,7 @@ class Dungeon:
             image_path += "o"
         else:
             image_path += "x"
+
         if orientation == "S" and walltype.__str__() == 'Boss':
             image_path += "_" + walltype.__str__()
         elif orientation != "S":
@@ -580,4 +580,26 @@ class PuzzlePatterns:
         {'name': 'Coral', 'position': pygame.Vector2(1160, 685)}
     ]
 
-    ALL_PATTERNS = [DOUBLE_URCHIN, JELLIES, TURRETS]
+    BODY_GUARDS = [
+        {'name': 'Coral', 'position': pygame.Vector2(396, 312)},
+        {'name': 'Coral', 'position': pygame.Vector2(1035, 312)},
+        {'name': 'Jelly', 'position': pygame.Vector2(970, 376)},
+        {'name': 'Jelly', 'position': pygame.Vector2(461, 376)},
+        {'name': 'Jelly', 'position': pygame.Vector2(716, 650)}
+    ]
+
+    PURSUIT = [
+        {'name': 'Coral', 'position': pygame.Vector2(284, 685)},
+        {'name': 'Coral', 'position': pygame.Vector2(1160, 205)},
+        {'name': 'Urchin', 'position': pygame.Vector2(383, 306)}
+    ]
+
+    WALL_OF_FLESH = [
+        {'name': 'Jelly', 'position': pygame.Vector2(720, 320)},
+        {'name': 'Jelly', 'position': pygame.Vector2(920, 320)},
+        {'name': 'Jelly', 'position': pygame.Vector2(520, 320)},
+        {'name': 'Urchin', 'position': pygame.Vector2(720, 246)},
+    ]
+
+    ALL_PATTERNS = [DOUBLE_URCHIN, JELLIES, TURRETS, BODY_GUARDS, PURSUIT,
+                    WALL_OF_FLESH]

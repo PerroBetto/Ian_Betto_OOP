@@ -70,9 +70,9 @@ class Boss(Entity):
         # get boss assets
         self._assets: dict[str, Surface] = dict[str, Surface]()
         boss_sprite_sheet: Path = Path(__file__).parent / \
-            "../../assets/visual/sprites/urchin/urchin-sheet.png"  # FIXME
+            "../../assets/visual/sprites/boss/boss-Sheet.png"
         sheet: Surface = pygame.image.load(boss_sprite_sheet)
-        self._all_frames_from_sheet(sheet, (32, 32), 4, "M", "")
+        self._all_frames_from_sheet(sheet, (32, 32), 2, "M", "")
 
         super().__init__(world, position, self._JELLY_ATTRIBUTES['speed'],
                          self._JELLY_ATTRIBUTES['clamp'], self._JELLY_ATTRIBUTES['friction'],
@@ -170,7 +170,7 @@ class Boss(Entity):
 
     def boss_attack(self) -> None:
         if self._world.entity_action(self, "player_col"):
-            self._world.entity_action(self, "player_dmg_1")
+            self._world.entity_action(self, "player_dmg_2")
 
     def switch_mode(self, delta: float) -> None:
         """Switch to the next mode when mode timer is zero."""
@@ -329,4 +329,8 @@ class BossShot(Projectile):
     def __init__(self, position: Vector2,
                  speed: float = 300,
                  friction: float = .5) -> None:
-        super().__init__(position, speed, friction)
+        shot_path: Path = Path(__file__).parent / \
+            "../../assets/visual/sprites/boss/boss_shot.png"
+        shot_sheet: Surface = pygame.image.load(shot_path)
+        super().__init__(position, speed, friction,
+                         image=self._single_from_sheet(shot_sheet, (16, 16)))
