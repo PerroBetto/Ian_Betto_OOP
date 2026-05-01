@@ -594,12 +594,11 @@ class PuzzlePatterns:
         {'name': 'Urchin', 'position': pygame.Vector2(383, 306)}
     ]
 
-    WALL_OF_FLESH = [
-        {'name': 'Jelly', 'position': pygame.Vector2(720, 320)},
-        {'name': 'Jelly', 'position': pygame.Vector2(920, 320)},
-        {'name': 'Jelly', 'position': pygame.Vector2(520, 320)},
-        {'name': 'Urchin', 'position': pygame.Vector2(720, 246)},
-    ]
+    # WALL_OF_FLESH = [
+    #     {'name': 'Jelly', 'position': pygame.Vector2(720, 320)},
+    #     {'name': 'Jelly', 'position': pygame.Vector2(920, 320)},
+    #     {'name': 'Jelly', 'position': pygame.Vector2(520, 320)},
+    #     {'name': 'Urchin', 'position': pygame.Vector2(720, 246)},
+    # ]
 
-    ALL_PATTERNS = [DOUBLE_URCHIN, JELLIES, TURRETS, BODY_GUARDS, PURSUIT,
-                    WALL_OF_FLESH]
+    ALL_PATTERNS = [DOUBLE_URCHIN, JELLIES, TURRETS, BODY_GUARDS, PURSUIT]

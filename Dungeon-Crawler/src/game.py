@@ -20,6 +20,7 @@ RULES:
 """
 import sys
 from typing import Self, Any
+import random
 
 import pygame
 import pygame.mixer_music as music
@@ -110,7 +111,7 @@ class Game:
         """
         pygame.init()
         self._screen: pygame.Surface = pygame.display.set_mode(
-            self._resolution, pygame.NOFRAME)
+            self._resolution, pygame.FULLSCREEN)
         pygame.mixer.init()
         self._running = True
         self._world: World = World(self._seed)
@@ -334,7 +335,7 @@ class Game:
         """
         Build the game here!
         """
-        seed: Any = 2983
+        seed: Any = random.randint(-10000, 10000)
         game: Game = Game(seed=seed)
         game.run_game()
 
