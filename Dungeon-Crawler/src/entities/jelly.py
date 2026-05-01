@@ -29,11 +29,8 @@ class Jelly(Entity):
                  speed: float = 300,
                  clamp_speed: float = 300,
                  friction: float = 5,
-                 HP: int = 3,
-                 assets: dict[str, Surface] | None = None,
-                 image: Surface | None = None,
-                 anim_timer: float = 100) -> None:
-
+                 HP: int = 3) -> None:
+        """Jellies are simple enemies that attack the player when they're close"""
         self._move_timer: float = self._MOVE_INTERVAL
 
         self._assets: dict[str, Surface] = dict[str, Surface]()
@@ -46,13 +43,27 @@ class Jelly(Entity):
                          position=position, assets=self._assets, image=self._assets["M1"],
                          HP=HP)
 
-# ---- base ----
+    def _sound_init(self) -> None:
+        self._sounds['hurt'] = 6
+        self._sounds['move'] = 6
+        self._sounds['death'] = 1
+
+# ==== properties ====
+
+    def damage(self, dmg: int) -> None:
+        if self._invincibility <= 0:
+            self.play_sound('hurt')
+        super().damage(dmg)
+        if self.HP <= 0:
+            self.play_sound('death')
+
+# ==== base methods ====
 
     def loop(self, delta: float, move: Vector2 | None = None) -> None:
         self.jelly_attack()
         return super().loop(delta, self.jelly_move(delta))
 
-    def render(self, time: float) -> tuple[Surface, Rect]:
+    def render(self, time: float) -> list[tuple[Surface, Rect]]:
         if self._invincibility > 0:
             self.image.set_alpha(int(abs(sin(time * 10) * 255)))
         else:
@@ -93,6 +104,7 @@ class Jelly(Entity):
             # reached zero.
             self._move_timer -= delta
             if self._move_timer <= 0.0:
+                self.play_sound('move')
                 self._move_timer = self._MOVE_INTERVAL
                 vector_ret = Vector2(direction.x, direction.y)
 

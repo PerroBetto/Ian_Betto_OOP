@@ -70,6 +70,11 @@ class Player(Entity):
         super().__init__(world, position, HP=HP, assets=self._assets, anim_timer=50.0,
                          image=self._assets[f"{self._curr_group}move0"])
 
+    def _sound_init(self) -> None:
+        """Initialize player sounds"""
+        self._sounds['hurt'] = 7
+        self._sounds['death'] = 1
+
     def quit_controller(self) -> None:
         """FIXME"""
         self._controller.quit()
@@ -88,6 +93,13 @@ class Player(Entity):
         if self._curr_group == 'W':
             return (-1, 0)
         return (0, -1)
+
+    def damage(self, dmg: int) -> None:
+        if self._invincibility <= 0:
+            self.play_sound('hurt')
+        super().damage(dmg)
+        if self.HP <= 0:
+            self.play_sound('death')
 
 # ---- base methods ----
 
@@ -108,7 +120,7 @@ class Player(Entity):
 
         super().loop(delta, self.player_movement())
 
-    def render(self, time: float) -> tuple[Surface, Rect]:
+    def render(self, time: float) -> list[tuple[Surface, Rect]]:
         if self._invincibility > 0:
             self.image.set_alpha(int(abs(sin(time * 10) * 255)))
         else:

@@ -206,10 +206,15 @@ class Game:
         debug_log.append("Item Slot:")
         debug_log.append(f" {debug_data['items']['slot']['name']}")
 
+        debug_log.append("Room:")
+        debug_log.append(f" Data: {debug_data['room']['current']}")
+        debug_log.append(f" Music: {debug_data['room']['music']}")
+        debug_log.append(f"FRAMERATE: {self._framerate.get_fps()}")
+
         # Display to screen
         for i, line in enumerate(debug_log):
-            text = self._debug_font.render(line, False, (255, 255, 255))
-            self._screen.blit(text, (20, i * 20))
+            text = self._debug_font.render(line, False, (255, 255, 0))
+            self._screen.blit(text, (120, 60 + i * 20))
 
     # --- render method ---
 

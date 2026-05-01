@@ -36,7 +36,7 @@ class Entity(sprite.Sprite):
     _SCALE: int = 5
     _INV_SEC: float = 0.1
 
-    __slots__: list[str] = ["_world"  # Any (World this entity belongs to)
+    __slots__: list[str] = ["_world",  # Any (World this entity belongs to)
                             "_assets",  # dict[str, Surface]
                             "_position",  # Vector2
                             "_prev_position",  # Vector2
@@ -109,6 +109,7 @@ class Entity(sprite.Sprite):
 
         self.image: Surface = temp_img
         self.rect: Rect = self.image.get_rect()
+        self.set_rect()
 
     def _sound_init(self) -> None:
         """
@@ -126,6 +127,11 @@ class Entity(sprite.Sprite):
     def position(self) -> Vector2:
         """Entity position"""
         return self._position
+
+    @position.setter
+    def position(self, other: Vector2) -> None:
+        self._position = other
+        self.set_rect()
 
     @property
     def HP(self) -> int:
@@ -170,7 +176,7 @@ class Entity(sprite.Sprite):
         if self._invincibility > 0:
             self._invincibility -= delta
 
-    def render(self, time: float) -> tuple[Surface, Rect]:
+    def render(self, time: float) -> list[tuple[Surface, Rect]]:
         """
         Returns the current image and rect of an entity.
         """
@@ -179,7 +185,7 @@ class Entity(sprite.Sprite):
             self.image.set_colorkey((0, 0, 0))
         except AttributeError:
             raise
-        return (self.image, self.rect)
+        return [(self.image, self.rect)]
 
 # ----- entity methods -----
 

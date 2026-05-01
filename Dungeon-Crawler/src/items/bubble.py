@@ -60,6 +60,8 @@ class BubbleWeapon(Item):
             bubble.loop(delta)
             if bubble.move_speed == 0:
                 self.kill_bubble(indx)
+            elif self._world.item_action(self, "s_col", bubble):
+                self.kill_bubble(indx)
             else:
                 if self._world.item_action(self, "attack", bubble):
                     self.kill_bubble(indx)
@@ -82,6 +84,7 @@ class BubbleWeapon(Item):
         new_bubble: Bubble = Bubble(player_pos)
         new_bubble.push(Vector2(player_look[0], player_look[1]))
         self._bubbles.append(new_bubble)
+        self._world.queue_sound(8)
 
 
 class Bubble(Projectile):
@@ -96,5 +99,5 @@ class Bubble(Projectile):
         bubble_path = Path(__file__).parent / \
             "../../assets/visual/items/bubble_weapon/Bubble_projectile.png"
         bubble_sheet = pygame.image.load(bubble_path)
-        super().__init__(position, speed=600.0, friction=15.0, damage=1,
+        super().__init__(position, speed=650.0, friction=15.0, damage=1,
                          image=self._single_from_sheet(bubble_sheet, (15, 15)))

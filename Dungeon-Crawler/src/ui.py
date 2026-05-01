@@ -22,15 +22,21 @@ class UI:
     _RESOLUTION: tuple[int, int] = (1440, 810)
     _SCALE: int = 5
     __slots__ = ["_assets",  # dict[str, Surface]
-                 "_hearts"]  # list[list[Any]]
-
+                 "_inventory",  # list[tuple[Surface, Rect]]
+                 "_hearts",  # list[list[Any]]
+                 "_player_hp",  # int (player health)
+                 "_victory"]  # bool (victory state)
 # ==== inits ====
 
     def __init__(self) -> None:
         """UI Init."""
         self._assets: dict[str, Surface] = {}
+        self._player_hp: int = 10
+        self._inventory: list[tuple[Surface, Rect]] = []
         self.__init_item_slot()
         self.__init_hearts()
+        self.__init_gameover()
+        self.__init_victory()
 
     def __init_item_slot(self) -> None:
         """Initializes the item slot for rendering."""
@@ -55,6 +61,22 @@ class UI:
             heart_rect.topleft = (0, (i*16*self._SCALE))
             self._hearts.append([self._assets['hearts_2'], heart_rect])
 
+    def __init_gameover(self) -> None:
+        """Initialize asset for game over"""
+        path: Path = Path(__file__).parent / \
+            "../assets/visual/ui/gameover.png"
+        gameover_sheet: Surface = pygame.image.load(path)
+        # Retrieve and store game over image
+        self._store_ui_element('gameover', gameover_sheet, (0, 0), (160, 64))
+
+    def __init_victory(self) -> None:
+        """Initialize asset for victory"""
+        self._victory: bool = False
+        path: Path = Path(__file__).parent / \
+            "../assets/visual/ui/victory.png"
+        victory_sheet: Surface = pygame.image.load(path)
+        # Retrieve and store game over image
+        self._store_ui_element('victory', victory_sheet, (0, 0), (160, 64))
 # ==== base ====
 
     def render(self) -> list[tuple[Surface, Rect]]:
@@ -75,15 +97,35 @@ class UI:
         item_rect.topleft = (0, self._RESOLUTION[1] - 32*self._SCALE)
         temp.append((self._assets['item'], item_rect))
 
+        # append iventory items to display
+        for item in self._inventory:
+            temp.append((item[0], item[1]))
+
+        # display game over
+        if self._player_hp <= 0:
+            gameover_rect: Rect = self._assets['gameover'].get_rect()
+            gameover_rect.topleft = (64 * self._SCALE, 32 * self._SCALE)
+            temp.append((self._assets['gameover'], gameover_rect))
+
+        # display victory
+        if self._victory:
+            victory_rect: Rect = self._assets['victory'].get_rect()
+            victory_rect.topleft = (64 * self._SCALE, 32 * self._SCALE)
+            temp.append((self._assets['victory'], victory_rect))
+
         return temp
 
 # ==== UI methods ====
 
     def update_hearts(self, hp: int) -> None:
         """Update heart UI according to player health."""
+        self._player_hp = hp
         for indx, heart in enumerate(self._hearts):
             rel_hp: int = hp - (indx*2)
-            if rel_hp > 2 or rel_hp < 0:
+            if rel_hp > 2:
+                continue
+            elif rel_hp < 0:
+                heart[0] = self._assets['hearts_0']
                 continue
             heart[0] = self._assets[f'hearts_{rel_hp}']
 
@@ -92,6 +134,16 @@ class UI:
         item_path: Path = Path(__file__).parent / \
             f"../assets/visual/items/{item_name}/icon.png"
         self._store_ui_element('item', pygame.image.load(item_path), (0, 0), (32, 32))
+
+    def update_items(self, items: list[tuple[Surface, Rect]]) -> None:
+        """Update the items to display"""
+        self._inventory = items
+        for i, _item in enumerate(self._inventory):
+            self._inventory[i][1].topleft = (272 * self._SCALE, (i*16*self._SCALE))
+
+    def update_victory(self, victory: bool) -> None:
+        """Updates to show victory"""
+        self._victory = victory
 
 # ==== get image from file ====
 
