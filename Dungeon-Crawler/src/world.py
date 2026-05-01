@@ -28,11 +28,13 @@ try:
     from .entities.jelly import Jelly
     from .entities.player import Player
     from .structures import Dungeon
+    from .sound import SoundManager
 except ImportError:
     from entities.entity_mod import Entity
     from entities.jelly import Jelly
     from entities.player import Player
     from structures import Dungeon
+    from sound import SoundManager
 from items.item import Item
 from items.key import Key
 from structures import Dungeon, Room
