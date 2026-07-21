@@ -38,4 +38,4 @@ clean:
 
 .PHONY: play
 play:
-	python $(GAME)
+	py $(GAME)

@@ -43,6 +43,7 @@ class Generation:
         self.rng = random.Random(seed_value)
         self.directions = [("N", (0, 1)), ("E", (1, 0)), ("W", (-1, 0)), ("S", (0, -1))]
         self.PROJECT_ROOT = Path(__file__).resolve().parents[1]
+        # print(f"project root: {self.PROJECT_ROOT}") # this uses relative paths, not good. Gonna need to restructure.
         self.SRC_ROOT = self.PROJECT_ROOT / "src"
         self.WALL_TEXTURE_ROOT = self.PROJECT_ROOT / \
             "assets" / "visual" / "textures" / "walls"

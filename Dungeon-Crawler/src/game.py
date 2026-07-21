@@ -19,6 +19,7 @@ RULES:
     All images should be scaled up by a factor of 5
 """
 import sys
+import os
 from typing import Self, Any
 import random
 
